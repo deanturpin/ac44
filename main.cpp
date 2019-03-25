@@ -38,16 +38,16 @@ int main() {
               << header.channels << " channels\n";
 
     // Create a container for the samples
-    std::vector<int16_t> samples(header.data_size);
+    using sample_t = int16_t;
+    std::vector<sample_t> samples(header.data_size);
     in.read(reinterpret_cast<char *>(samples.data()),
-            samples.size() * sizeof(decltype(samples)::value_type));
+            samples.size() * sizeof(sample_t));
 
     std::cout << samples.size() << " samples read\n";
 
     if (!samples.empty())
       std::copy(std::cbegin(samples), std::next(std::cbegin(samples), 267),
-                std::ostream_iterator<decltype(samples)::value_type>(std::cout,
-                                                                     "\n"));
+                std::ostream_iterator<sample_t>(std::cout, "\n"));
   } else
     std::cout << file << " is bad\n";
 
