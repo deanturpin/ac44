@@ -47,9 +47,10 @@ int main() {
     std::cout << samples.size() << " samples read\n";
 
     // Preview samples if we have some
-    const size_t sample_preview{267};
-    if (samples.size() >= sample_preview)
-      std::copy_n(std::cbegin(samples), sample_preview,
+    const size_t preview_size{267};
+
+    if (samples.size() >= preview_size)
+      std::copy_n(std::cbegin(samples), preview_size,
                   std::ostream_iterator<sample_t>(std::cout, "\n"));
   } else
     std::cout << file << " is bad\n";
