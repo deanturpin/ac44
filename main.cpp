@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -28,15 +29,17 @@ int main() {
 
   const std::string file{"../dft/wav/KP_guest.wav"};
 
+  std::ostringstream out;
+
   if (std::ifstream in{file}; in.good()) {
 
     in.read(reinterpret_cast<char *>(&header), sizeof header);
 
-    std::cout << std::hex << std::showbase << header.riff_id << '\n'
-              << header.riff_size << '\n'
-              << header.wave_tag << '\n'
-              << std::dec << header.data_size << " bytes\n"
-              << header.channels << " channels\n";
+    out << std::hex << std::showbase << header.riff_id << '\n'
+        << header.riff_size << '\n'
+        << header.wave_tag << '\n'
+        << std::dec << header.data_size << " bytes\n"
+        << header.channels << " channels\n";
 
     // Create a container for the samples
     using sample_t = int16_t;
@@ -44,16 +47,18 @@ int main() {
     in.read(reinterpret_cast<char *>(samples.data()),
             samples.size() * sizeof(sample_t));
 
-    std::cout << samples.size() << " samples read\n";
+    out << samples.size() << " samples read\n";
 
     // Preview samples if we have some
     const size_t preview_size{267};
 
     if (samples.size() >= preview_size)
       std::copy_n(std::cbegin(samples), preview_size,
-                  std::ostream_iterator<sample_t>(std::cout, "\n"));
+                  std::ostream_iterator<sample_t>(out, "\n"));
   } else
-    std::cout << file << " is bad\n";
+    out << file << " is bad\n";
+
+  std::cout << out.str();
 
   // TODO - normalise
 }
