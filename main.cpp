@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cassert>
 #include <fstream>
 #include <iostream>
@@ -45,9 +46,11 @@ int main() {
 
     std::cout << samples.size() << " samples read\n";
 
-    if (!samples.empty())
-      std::copy(std::cbegin(samples), std::next(std::cbegin(samples), 267),
-                std::ostream_iterator<sample_t>(std::cout, "\n"));
+    // Preview samples if we have some
+    const size_t sample_preview = 267;
+    if (samples.size() >= sample_preview)
+      std::copy_n(std::cbegin(samples), sample_preview,
+                  std::ostream_iterator<sample_t>(std::cout, "\n"));
   } else
     std::cout << file << " is bad\n";
 
