@@ -31,8 +31,10 @@ int main() {
 
   std::ostringstream out;
 
+  // Check file is good
   if (std::ifstream in{file}; in.good()) {
 
+    // Read only the header
     in.read(reinterpret_cast<char *>(&header), sizeof header);
 
     out << std::hex << std::showbase << header.riff_id << '\n'
@@ -47,10 +49,8 @@ int main() {
     in.read(reinterpret_cast<char *>(samples.data()),
             samples.size() * sizeof(sample_t));
 
-    out << samples.size() << " samples read\n";
-
     // Preview samples if we have some
-    const size_t preview_size{267};
+    const size_t preview_size{30};
 
     if (samples.size() >= preview_size)
       std::copy_n(std::cbegin(samples), preview_size,
