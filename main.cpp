@@ -40,14 +40,17 @@ int main() {
     out << std::hex << std::showbase << header.riff_id << '\n'
         << header.riff_size << '\n'
         << header.wave_tag << '\n'
-        << std::dec << header.data_size << " bytes\n"
-        << header.channels << " channels\n";
+        << std::dec << header.data_size << " bytes of samples\n"
+        << header.channels << " channel" << (header.channels > 1 ? "s" : "")
+        << '\n';
 
     // Create a container for the samples
     using sample_t = int16_t;
-    std::vector<sample_t> samples(header.data_size);
+    std::vector<sample_t> samples(header.data_size / sizeof(sample_t));
     in.read(reinterpret_cast<char *>(samples.data()),
             samples.size() * sizeof(sample_t));
+
+    out << samples.size() << " samples read\n";
 
     // Preview samples if we have some
     const size_t preview_size{30};
