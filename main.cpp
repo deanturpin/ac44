@@ -58,6 +58,12 @@ int main() {
     if (samples.size() >= preview_size)
       std::copy_n(std::cbegin(samples), preview_size,
                   std::ostream_iterator<sample_t>(out, "\n"));
+
+    // Dump to a CSV
+    if (std::ofstream csv{"tmp/blah.csv"}; csv.good())
+      std::copy(std::cbegin(samples), std::cend(samples),
+                std::ostream_iterator<sample_t>(csv, "\n"));
+
   } else
     out << file << " is bad\n";
 
