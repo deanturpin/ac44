@@ -34,7 +34,7 @@ int main() {
   // Check file is good
   if (std::ifstream in{file}; in.good()) {
 
-    // Read only the header
+    // Read the header
     in.read(reinterpret_cast<char *>(&header), sizeof header);
 
     out << std::hex << std::showbase << header.riff_id << '\n'
@@ -44,7 +44,7 @@ int main() {
         << header.channels << " channel" << (header.channels > 1 ? "s" : "")
         << '\n';
 
-    // Create a container for the samples
+    // Create a container for the samples and read the number in the header
     using sample_t = int16_t;
     std::vector<sample_t> samples(header.data_size / sizeof(sample_t));
     in.read(reinterpret_cast<char *>(samples.data()),
@@ -54,7 +54,6 @@ int main() {
 
     // Preview samples if we have some
     const size_t preview_size{30};
-
     if (samples.size() >= preview_size)
       std::copy_n(std::cbegin(samples), preview_size,
                   std::ostream_iterator<sample_t>(out, "\n"));
