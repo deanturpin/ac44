@@ -1,7 +1,9 @@
+#include <algorithm>
 #include <cassert>
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
 
 int main() {
 
@@ -35,6 +37,17 @@ int main() {
     std::cout << std::hex << std::showbase << h.riff_id << '\n'
               << h.riff_size << '\n'
               << h.wave_tag << '\n'
-              << std::dec << h.data_size << " bytes\n";
+              << std::dec << h.data_size << " bytes\n"
+              << h.channels << " channels\n";
+
+    // Create a container for the samples
+    std::vector<int16_t> s(h.data_size);
+    in.read(reinterpret_cast<char *>(s.data()), s.size() * sizeof(int16_t));
+
+    std::cout << s.size() << " samples read\n";
+
+    if (!s.empty())
+      std::for_each(std::cbegin(s), std::next(std::cbegin(s), 30),
+                    [](const auto &i) { std::cout << i << '\n'; });
   }
 }
