@@ -13,19 +13,18 @@ int main() {
     uint32_t wave_tag;
     uint32_t format_id;
     uint32_t format_size;
-    uint32_t format_tag : 16;
-    uint32_t channels : 16;
+    uint16_t format_tag;
+    uint16_t channels;
     uint32_t sample_rate;
     uint32_t bytes_per_second;
-    uint32_t block_align : 16;
-    uint32_t bit_depth : 16;
+    uint16_t block_align;
+    uint16_t bit_depth;
     uint32_t data_id;
     uint32_t data_size;
   };
 
   assert(sizeof(wav_header) == 44);
 
-  std::cout << "audio read\n";
   const std::string file{"../dft/wav/hobgoblin_didge_8000.wav"};
 
   if (std::ifstream in{file}; in.good()) {
@@ -46,8 +45,8 @@ int main() {
 
     std::cout << s.size() << " samples read\n";
 
-    if (!s.empty())
-      std::for_each(std::cbegin(s), std::next(std::cbegin(s), 30),
-                    [](const auto &i) { std::cout << i << '\n'; });
+    // if (!s.empty())
+    //   std::for_each(std::cbegin(s), std::next(std::cbegin(s), 30),
+    //                 [](const auto &i) { std::cout << i << '\n'; });
   }
 }
