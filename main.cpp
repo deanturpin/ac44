@@ -1,7 +1,7 @@
-#include <algorithm>
 #include <cassert>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <string>
 #include <vector>
 
@@ -25,7 +25,7 @@ int main() {
 
   assert(sizeof(header) == 44);
 
-  const std::string file{"../dft/wav/hobgoblin_didge_8000.wav"};
+  const std::string file{"../dft/wav/KP_guest.wav"};
 
   if (std::ifstream in{file}; in.good()) {
 
@@ -45,8 +45,11 @@ int main() {
     std::cout << samples.size() << " samples read\n";
 
     if (!samples.empty())
-      std::for_each(std::cbegin(samples), std::next(std::cbegin(samples), 30),
-                    [](const auto &i) { std::cout << i << '\n'; });
+      std::copy(std::cbegin(samples), std::next(std::cbegin(samples), 267),
+                std::ostream_iterator<decltype(samples)::value_type>(std::cout,
+                                                                     "\n"));
   } else
     std::cout << file << " is bad\n";
+
+  // TODO - normalise
 }
