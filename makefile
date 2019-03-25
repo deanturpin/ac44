@@ -11,6 +11,10 @@ all: tmp tmp/main.o run
 tmp:
 	mkdir $@
 
+	# Get some WAVs to process
+	# curl https://github.com/deanturpin/dft/blob/master/wav/didgeridoo_big_tony_toot.wav?raw=true -o $@/audio1.wav
+	# curl https://github.com/deanturpin/dft/blob/master/wav/singing_bowl3.wav?raw=true -o $@/audio2.wav
+
 run:
 	@tmp/main.o
 

@@ -27,7 +27,7 @@ int main() {
 
   assert(sizeof(header) == 44);
 
-  const std::string file{"../dft/wav/KP_guest.wav"};
+  const std::string file{"../dft/wav/singing_bowl5.wav"};
 
   std::ostringstream out;
 
