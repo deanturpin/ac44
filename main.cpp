@@ -64,9 +64,35 @@ std::string read_wav() {
         csv << s << '\n';
 
   } else
-    out << file << " is bad\n";
+    out << file << " is not good\n";
 
   return out.str();
 }
 
-int main() { std::cout << read_wav(); }
+std::string read_alsa() {
+
+  std::ostringstream out;
+
+  if (std::cin.good()) {
+    const size_t count{2000};
+
+    using sample_t = int16_t;
+    std::vector<sample_t> samples(count);
+    std::cin.read(reinterpret_cast<char *>(samples.data()),
+                  samples.size() * sizeof(sample_t));
+
+    out << samples.size() << " samples read from mic\n";
+
+    // Dump to a CSV
+    if (std::ofstream csv{"tmp/mic.csv"}; csv.good())
+      for (const auto &s : samples)
+        csv << s << '\n';
+  }
+
+  return out.str();
+}
+
+int main() {
+  std::cout << read_wav();
+  std::cout << read_alsa();
+}

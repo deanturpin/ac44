@@ -12,7 +12,7 @@ tmp:
 	mkdir $@
 
 run:
-	@tmp/main.o
+	@arecord -q -f S16_LE -c 1 -r 8000 | tmp/main.o
 
 clean:
 	rm -rf tmp
