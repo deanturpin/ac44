@@ -59,9 +59,9 @@ int main() {
                   std::ostream_iterator<sample_t>(out, "\n"));
 
     // Dump to a CSV
-    if (std::ofstream csv{"tmp/blah.csv"}; csv.good())
-      std::copy(std::cbegin(samples), std::cend(samples),
-                std::ostream_iterator<sample_t>(csv, "\n"));
+    if (std::ofstream csv{"tmp/samples.csv"}; csv.good())
+      for (const auto &s : samples)
+        csv << s << '\n';
 
   } else
     out << file << " is bad\n";
