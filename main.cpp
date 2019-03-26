@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-int main() {
+std::string read_wav() {
 
   struct {
     uint32_t riff_id;
@@ -66,7 +66,7 @@ int main() {
   } else
     out << file << " is bad\n";
 
-  std::cout << out.str();
-
-  // TODO - normalise
+  return out.str();
 }
+
+int main() { std::cout << read_wav(); }
