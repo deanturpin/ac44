@@ -11,8 +11,13 @@ all: tmp tmp/main.o run
 tmp:
 	mkdir $@
 
+params = -q -f S16_LE -c 1 -r 44100
+
 run:
-	@arecord -q -f S16_LE -c 1 -r 44100 | tmp/main.o
+	arecord $(params) | tmp/main.o
 
 clean:
 	rm -rf tmp
+
+generate:
+	arecord $(params) -d 5 > tmp/long.raw
