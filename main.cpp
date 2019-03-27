@@ -1,7 +1,7 @@
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -19,14 +19,15 @@ int main() {
 
   out << samples.size() << " samples read from mic\n";
 
-  const auto &[min, max] = std::minmax_element(std::cbegin(samples), std::cend(samples));
+  const auto &[min, max] =
+      std::minmax_element(std::cbegin(samples), std::cend(samples));
   std::cout << *min << "\tmin\n";
   std::cout << *max << "\tmax\n";
 
   // Dump to a CSV
   if (std::ofstream csv{"tmp/mic.csv"}; csv.good())
     for (const auto &s : samples)
-      csv << s << '\n';
+      csv << std::hex << s << '\n';
 
   std::cout << out.str();
 }
