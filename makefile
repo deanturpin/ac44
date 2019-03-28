@@ -14,7 +14,7 @@ tmp:
 params = -q -f S16_LE -c 1 -r 44100
 
 run:
-	arecord $(params) | tmp/main.o
+	arecord $(params) -d 1 | tmp/main.o
 
 clean:
 	rm -rf tmp
