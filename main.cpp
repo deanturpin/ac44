@@ -1,8 +1,6 @@
 #include <algorithm>
-// #include <fstream>
 #include <cassert>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -26,25 +24,21 @@ int main() {
 
   assert(sizeof(header) == 44);
 
-  std::ostringstream out;
-
   // Check file is good
   if (std::cin.good()) {
 
     // Read the header
     std::cin.read(reinterpret_cast<char *>(&header), sizeof header);
 
-    out << std::hex << std::showbase << header.riff_id << '\n'
-        << header.riff_size << '\n'
-        << header.wave_tag[0] << header.wave_tag[1] << header.wave_tag[2]
-        << header.wave_tag[3] << '\n'
-        << std::hex << header.sample_rate << " bytes of samples\n"
-        << std::hex << header.data_size << " bytes of samples\n"
-        << std::dec << header.channels << " channel"
-        << (header.channels > 1 ? "s" : "") << '\n';
+    std::cout << std::hex << std::showbase << header.riff_id << '\n'
+              << header.riff_size << '\n'
+              << header.wave_tag[0] << header.wave_tag[1] << header.wave_tag[2]
+              << header.wave_tag[3] << '\n'
+              << std::hex << header.sample_rate << " bytes of samples\n"
+              << std::hex << header.data_size << " bytes of samples\n"
+              << std::dec << header.channels << " channel"
+              << (header.channels > 1 ? "s" : "") << '\n';
   }
-
-  std::cout << out.str();
 
   // Read a batch of samples
   const size_t count{44100};
