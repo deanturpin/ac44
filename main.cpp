@@ -1,5 +1,6 @@
 #include <algorithm>
-#include <fstream>
+// #include <fstream>
+#include <cassert>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -7,27 +8,60 @@
 
 int main() {
 
+  struct {
+    uint32_t riff_id;
+    uint32_t riff_size;
+    char wave_tag[4];
+    uint32_t format_id;
+    uint32_t format_size;
+    uint16_t format_tag;
+    uint16_t channels;
+    uint32_t sample_rate;
+    uint32_t bytes_per_second;
+    uint16_t block_align;
+    uint16_t bit_depth;
+    uint32_t data_id;
+    uint32_t data_size;
+  } header;
+
+  assert(sizeof(header) == 44);
+
   std::ostringstream out;
 
+  // Check file is good
+  if (std::cin.good()) {
+
+    // Read the header
+    std::cin.read(reinterpret_cast<char *>(&header), sizeof header);
+
+    out << std::hex << std::showbase << header.riff_id << '\n'
+        << header.riff_size << '\n'
+        << header.wave_tag[0] << header.wave_tag[1] << header.wave_tag[2]
+        << header.wave_tag[3] << '\n'
+        << std::hex << header.sample_rate << " bytes of samples\n"
+        << std::hex << header.data_size << " bytes of samples\n"
+        << std::dec << header.channels << " channel"
+        << (header.channels > 1 ? "s" : "") << '\n';
+  }
+
+  std::cout << out.str();
+
   // Read a batch of samples
-  const size_t count{10000};
+  const size_t count{44100};
 
   using sample_t = int16_t;
   std::vector<sample_t> samples(count);
-  std::cin.read(reinterpret_cast<char *>(samples.data()),
-                samples.size() * sizeof(sample_t));
 
-  out << samples.size() << " samples read from mic\n";
+  int iterations{};
 
-  const auto &[min, max] =
-      std::minmax_element(std::cbegin(samples), std::cend(samples));
-  std::cout << *min << "\tmin\n";
-  std::cout << *max << "\tmax\n";
+  while (iterations++ < 100) {
 
-  // Dump to a CSV
-  if (std::ofstream csv{"tmp/mic.csv"}; csv.good())
-    for (const auto &s : samples)
-      csv << std::hex << s << '\n';
+    std::cin.read(reinterpret_cast<char *>(samples.data()),
+                  samples.size() * sizeof(sample_t));
 
-  std::cout << out.str();
+    const auto &[min, max] =
+        std::minmax_element(std::cbegin(samples), std::cend(samples));
+
+    std::cout << "min/max\t" << *min << "\t" << *max << "\n";
+  }
 }
