@@ -59,7 +59,7 @@ int main() {
         std::accumulate(std::cbegin(samples), std::cend(samples), 0.0) /
         samples.size();
 
-    std::cout << "min/mean/max\t" << *min << '\t' << mean << '\t' << *max
+    std::cout << "min/mean/max\t" << *min << '\t' << *max << '\t' << mean
               << '\n';
   }
 }
