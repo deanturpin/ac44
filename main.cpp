@@ -43,7 +43,7 @@ int main() {
 
   // Read a batch of samples
   using sample_t = int16_t;
-  std::vector<sample_t> samples(44100u);
+  std::vector<sample_t> samples(44100 / 2);
 
   int iterations{};
 
