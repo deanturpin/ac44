@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <numeric>
 #include <string>
 #include <vector>
 
@@ -41,10 +42,8 @@ int main() {
   }
 
   // Read a batch of samples
-  const size_t count{44100};
-
   using sample_t = int16_t;
-  std::vector<sample_t> samples(count);
+  std::vector<sample_t> samples(44100u);
 
   int iterations{};
 
@@ -56,6 +55,11 @@ int main() {
     const auto &[min, max] =
         std::minmax_element(std::cbegin(samples), std::cend(samples));
 
-    std::cout << "min/max\t" << *min << "\t" << *max << "\n";
+    const auto &mean =
+        std::accumulate(std::cbegin(samples), std::cend(samples), 0.0) /
+        samples.size();
+
+    std::cout << "min/mean/max\t" << *min << '\t' << mean << '\t' << *max
+              << '\n';
   }
 }
