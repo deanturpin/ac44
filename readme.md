@@ -1,10 +1,11 @@
-ac44 is 44100Hz in hex.
 
+The WAV header contains some recognisable text info.
 ```bash
-$ xxd tmp/long.raw | head -5
+$ xxd tmp/long.raw | head -2
 00000000: 5249 4646 ccba 0600 5741 5645 666d 7420  RIFF....WAVEfmt
 00000010: 1000 0000 0100 0100 44ac 0000 8858 0100  ........D....X..
-00000020: 0200 1000 6461 7461 a8ba 0600 0dc1 f5c0  ....data........
-00000030: ccc0 e3c0 0cc1 e2c0 d3c0 f1c0 f7c0 dec0  ................
-00000040: 25c1 b9c0 37c1 cfc0 83c1 bcbf 61b3 55be  %...7.......a.U.
+
+                               ^
+                               |
+ac44 is 44100Hz in hex --------|
 ```
