@@ -34,10 +34,8 @@ std::string get_header(std::istream &in) {
     // Read the header
     in.read(reinterpret_cast<char *>(&header), sizeof header);
 
-    out << std::hex <<
-
-        header.wave_tag[0] << header.wave_tag[1] << header.wave_tag[2]
-        << header.wave_tag[3] << '\n'
+    out << std::hex << header.wave_tag[0] << header.wave_tag[1]
+        << header.wave_tag[2] << header.wave_tag[3] << '\n'
         << std::hex << header.sample_rate << " sample rate\n"
         << std::hex << header.data_size << " bytes of samples\n"
         << std::dec << header.channels << " channel"
