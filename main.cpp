@@ -45,12 +45,12 @@ int main() {
   using sample_t = int16_t;
   std::vector<sample_t> samples(44100 / 2);
 
-  int iterations{};
+  while (
 
-  while (iterations++ < 100) {
+      std::cin.read(reinterpret_cast<char *>(samples.data()),
+                    samples.size() * sizeof(sample_t))
 
-    std::cin.read(reinterpret_cast<char *>(samples.data()),
-                  samples.size() * sizeof(sample_t));
+  ) {
 
     const auto &[min, max] =
         std::minmax_element(std::cbegin(samples), std::cend(samples));
