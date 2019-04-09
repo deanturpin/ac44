@@ -59,10 +59,6 @@ int main() {
     const auto &[min, max] =
         std::minmax_element(std::cbegin(samples), std::cend(samples));
 
-    const auto &mean =
-        std::accumulate(std::cbegin(samples), std::cend(samples), 0.0) /
-        samples.size();
-
-    std::cout << *min << '\t' << *max << '\t' << mean << '\n';
+    std::cout << *min << '\t' << *max << '\n';
   }
 }
