@@ -2,10 +2,11 @@
 #include <cassert>
 #include <iostream>
 #include <numeric>
+#include <sstream>
 #include <string>
 #include <vector>
 
-int main() {
+std::string get_header(std::istream &in) {
 
   struct {
     uint32_t riff_id;
@@ -25,32 +26,37 @@ int main() {
 
   assert(sizeof(header) == 44);
 
+  std::stringstream out;
+
   // Check file is good
   if (std::cin.good()) {
 
     // Read the header
-    std::cin.read(reinterpret_cast<char *>(&header), sizeof header);
+    in.read(reinterpret_cast<char *>(&header), sizeof header);
 
-    std::cout << std::hex << std::showbase << header.riff_id << '\n'
-              << header.riff_size << '\n'
-              << header.wave_tag[0] << header.wave_tag[1] << header.wave_tag[2]
-              << header.wave_tag[3] << '\n'
-              << std::hex << header.sample_rate << " bytes of samples\n"
-              << std::hex << header.data_size << " bytes of samples\n"
-              << std::dec << header.channels << " channel"
-              << (header.channels > 1 ? "s" : "") << '\n';
+    out << std::hex <<
+
+        header.wave_tag[0] << header.wave_tag[1] << header.wave_tag[2]
+        << header.wave_tag[3] << '\n'
+        << std::hex << header.sample_rate << " sample rate\n"
+        << std::hex << header.data_size << " bytes of samples\n"
+        << std::dec << header.channels << " channel"
+        << (header.channels > 1 ? "s" : "") << '\n';
   }
+
+  return out.str();
+}
+
+int main() {
 
   // Read a batch of samples
   using sample_t = int16_t;
   std::vector<sample_t> samples(44100 / 2);
 
-  while (
+  std::cout << get_header(std::cin);
 
-      std::cin.read(reinterpret_cast<char *>(samples.data()),
-                    samples.size() * sizeof(sample_t))
-
-  ) {
+  while (std::cin.read(reinterpret_cast<char *>(samples.data()),
+                       samples.size() * sizeof(sample_t))) {
 
     const auto &[min, max] =
         std::minmax_element(std::cbegin(samples), std::cend(samples));
