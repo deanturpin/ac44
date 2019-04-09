@@ -26,10 +26,10 @@ std::string get_header(std::istream &in) {
 
   assert(sizeof(header) == 44);
 
-  std::stringstream out;
+  std::ostringstream out;
 
   // Check file is good
-  if (std::cin.good()) {
+  if (in.good()) {
 
     // Read the header
     in.read(reinterpret_cast<char *>(&header), sizeof header);
@@ -39,7 +39,7 @@ std::string get_header(std::istream &in) {
         << std::hex << header.sample_rate << " sample rate\n"
         << std::hex << header.data_size << " bytes of samples\n"
         << std::dec << header.channels << " channel"
-        << (header.channels > 1 ? "s" : "") << '\n';
+        << (header.channels > 1 ? "s" : "") << "\n---\n";
   }
 
   return out.str();
