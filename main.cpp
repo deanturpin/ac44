@@ -6,43 +6,44 @@
 #include <string>
 #include <vector>
 
-std::string get_header(std::istream &in) {
+struct ac44 {
+  uint32_t riff_id;
+  uint32_t riff_size;
+  char wave_tag[4];
+  uint32_t format_id;
+  uint32_t format_size;
+  uint16_t format_tag;
+  uint16_t channels;
+  uint32_t sample_rate;
+  uint32_t bytes_per_second;
+  uint16_t block_align;
+  uint16_t bit_depth;
+  uint32_t data_id;
+  uint32_t data_size;
+};
 
-  struct {
-    uint32_t riff_id;
-    uint32_t riff_size;
-    char wave_tag[4];
-    uint32_t format_id;
-    uint32_t format_size;
-    uint16_t format_tag;
-    uint16_t channels;
-    uint32_t sample_rate;
-    uint32_t bytes_per_second;
-    uint16_t block_align;
-    uint16_t bit_depth;
-    uint32_t data_id;
-    uint32_t data_size;
-  } header;
-
-  assert(sizeof(header) == 44);
-
+auto dump_meta(const ac44 &meta) {
   std::ostringstream out;
-
-  // Check file is good
-  if (in.good()) {
-
-    // Read the header
-    in.read(reinterpret_cast<char *>(&header), sizeof header);
-
-    out << std::hex << header.wave_tag[0] << header.wave_tag[1]
-        << header.wave_tag[2] << header.wave_tag[3] << '\n'
-        << std::hex << header.sample_rate << " sample rate\n"
-        << std::hex << header.data_size << " bytes of samples\n"
-        << std::dec << header.channels << " channel"
-        << (header.channels > 1 ? "s" : "") << "\n---\n";
-  }
+  out << std::hex << meta.wave_tag[0] << meta.wave_tag[1] << meta.wave_tag[2]
+      << meta.wave_tag[3] << '\n'
+      << std::hex << meta.sample_rate << " sample rate\n"
+      << std::hex << meta.data_size << " bytes of samples\n"
+      << std::dec << meta.channels << " channel"
+      << (meta.channels > 1 ? "s" : "") << "\n---\n";
 
   return out.str();
+}
+
+auto get_meta(std::istream &in) {
+
+  ac44 meta;
+  assert(sizeof(meta) == 44);
+
+  // Check file is good and read the meta data
+  if (in.good())
+    in.read(reinterpret_cast<char *>(&meta), sizeof meta);
+
+  return meta;
 }
 
 int main() {
@@ -51,7 +52,8 @@ int main() {
   using sample_t = int16_t;
   std::vector<sample_t> samples(44100 / 2);
 
-  std::cout << get_header(std::cin);
+  const auto &meta = get_meta(std::cin);
+  std::cout << dump_meta(meta);
 
   while (std::cin.read(reinterpret_cast<char *>(samples.data()),
                        samples.size() * sizeof(sample_t))) {
