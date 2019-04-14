@@ -61,7 +61,12 @@ int main() {
   while (std::cin.read(reinterpret_cast<char *>(samples.data()),
                        samples.size() * sizeof(sample_t))) {
 
-    const auto start = std::chrono::system_clock::now();
+    using namespace std::chrono;
+
+    // Start timer
+    const auto start = system_clock::now();
+
+    // Calculate peaks
     const auto &[min, max] =
         std::minmax_element(std::cbegin(samples), std::cend(samples));
 
@@ -77,10 +82,9 @@ int main() {
       std::cout << bin * bin_width << '\t' << std::bitset<32>(abs(value))
                 << '\n';
 
-    // End timer and report
-    const auto end = std::chrono::system_clock::now();
-    const auto diff =
-        std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    // Stop timer and report stats
+    const auto end  = std::chrono::system_clock::now();
+    const auto diff = duration_cast<milliseconds>(end - start);
     std::cout << *min << '\t' << *max << '\t' << diff.count() << " us\n";
   }
 }
