@@ -1,6 +1,8 @@
 #include <algorithm>
+#include <bitset>
 #include <cassert>
 #include <iostream>
+#include <map>
 #include <numeric>
 #include <sstream>
 #include <string>
@@ -50,7 +52,8 @@ int main() {
 
   // Read a batch of samples
   using sample_t = int16_t;
-  std::vector<sample_t> samples(44100 / 2);
+  std::vector<sample_t> samples(44100 / 1);
+  const size_t bins{20u};
 
   const auto &meta = get_meta(std::cin);
   std::cout << dump_meta(meta);
@@ -61,6 +64,17 @@ int main() {
     const auto &[min, max] =
         std::minmax_element(std::cbegin(samples), std::cend(samples));
 
-    std::cout << *min << '\t' << *max << '\n';
+    const size_t bin_width = samples.size() / bins;
+
+    std::cout << *min << '\t' << *max << '\t' << bin_width << '\n';
+
+    // Populate display histogram
+    std::map<size_t, uint32_t> hist;
+    for (auto i = std::cbegin(samples); i != std::cend(samples); ++i)
+      hist[std::distance(std::cbegin(samples), i) / bin_width] += *i;
+
+    // Report histogram
+    for (const auto &[bin, value] : hist)
+      std::cout << bin << '\t' << std::bitset<32>(abs(value)) << '\n';
   }
 }
