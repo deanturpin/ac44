@@ -50,9 +50,9 @@ auto get_meta(std::istream &in) {
 }
 
 // Return a simple histogram of the samples passed in
-std::string
-create_display_histogram(const std::vector<int16_t>::const_iterator &begin,
-                         const std::vector<int16_t>::const_iterator &end) {
+using sample_t   = int16_t;
+using iterator_t = const std::vector<sample_t>::const_iterator;
+std::string create_display_histogram(iterator_t &begin, iterator_t &end) {
 
   // Create display histogram
   const size_t bin_count{41};
@@ -79,7 +79,6 @@ int main() {
   std::cout << dump_meta(meta);
 
   // Read batches of samples
-  using sample_t = int16_t;
   std::vector<sample_t> samples(44100 / 1);
   while (std::cin.read(reinterpret_cast<char *>(samples.data()),
                        samples.size() * sizeof(sample_t))) {
