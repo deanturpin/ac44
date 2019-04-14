@@ -66,7 +66,8 @@ int main() {
         std::minmax_element(std::cbegin(samples), std::cend(samples));
 
     // Populate display histogram
-    const size_t bin_width = samples.size() / 41;
+    const size_t bin_count{41};
+    const size_t bin_width{samples.size() / bin_count};
     std::map<size_t, uint32_t> hist;
     for (auto i = std::cbegin(samples); i != std::cend(samples); ++i)
       hist[std::distance(std::cbegin(samples), i) / bin_width] += *i;
