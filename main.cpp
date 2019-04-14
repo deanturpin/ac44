@@ -53,7 +53,7 @@ int main() {
   // Read a batch of samples
   using sample_t = int16_t;
   std::vector<sample_t> samples(44100 / 1);
-  const size_t bins{20u};
+  const size_t bins{41u};
 
   const auto &meta = get_meta(std::cin);
   std::cout << dump_meta(meta);
@@ -66,7 +66,7 @@ int main() {
 
     const size_t bin_width = samples.size() / bins;
 
-    std::cout << *min << '\t' << *max << '\t' << bin_width << '\n';
+    std::cout << *min << '\t' << *max << '\n';
 
     // Populate display histogram
     std::map<size_t, uint32_t> hist;
@@ -75,6 +75,7 @@ int main() {
 
     // Report histogram
     for (const auto &[bin, value] : hist)
-      std::cout << bin << '\t' << std::bitset<32>(abs(value)) << '\n';
+      std::cout << bin * bin_width << '\t' << std::bitset<32>(abs(value))
+                << '\n';
   }
 }
