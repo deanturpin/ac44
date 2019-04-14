@@ -51,13 +51,13 @@ auto get_meta(std::istream &in) {
 
 int main() {
 
-  // Read a batch of samples
-  using sample_t = int16_t;
-  std::vector<sample_t> samples(44100 / 1);
-
+  // Read the header
   const auto &meta = get_meta(std::cin);
   std::cout << dump_meta(meta);
 
+  // Read batches of samples
+  using sample_t = int16_t;
+  std::vector<sample_t> samples(44100 / 1);
   while (std::cin.read(reinterpret_cast<char *>(samples.data()),
                        samples.size() * sizeof(sample_t))) {
 
@@ -66,8 +66,7 @@ int main() {
         std::minmax_element(std::cbegin(samples), std::cend(samples));
 
     // Populate display histogram
-    const size_t bins{40};
-    const size_t bin_width = samples.size() / bins;
+    const size_t bin_width = samples.size() / 41;
     std::map<size_t, uint32_t> hist;
     for (auto i = std::cbegin(samples); i != std::cend(samples); ++i)
       hist[std::distance(std::cbegin(samples), i) / bin_width] += *i;
