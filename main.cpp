@@ -49,6 +49,29 @@ auto get_meta(std::istream &in) {
   return meta;
 }
 
+// Return a simple histogram of the samples passed in
+std::string
+create_display_histogram(const std::vector<int16_t>::const_iterator &begin,
+                         const std::vector<int16_t>::const_iterator &end) {
+
+  // Create display histogram
+  const size_t bin_count{41};
+  const size_t bin_width{std::distance(begin, end) / bin_count};
+  std::map<size_t, uint32_t> hist;
+
+  // Populate display histogram by truncating the pulse index to fit it on
+  // the screen
+  for (auto i = begin; i != end; ++i)
+    hist[std::distance(begin, i) / bin_width] += *i;
+
+  // Report histogram
+  std::stringstream out;
+  for (const auto &[bin, value] : hist)
+    out << bin * bin_width << '\t' << std::bitset<32>(abs(value)) << '\n';
+
+  return out.str();
+}
+
 int main() {
 
   // Read the header
@@ -70,17 +93,9 @@ int main() {
     const auto &[min, max] =
         std::minmax_element(std::cbegin(samples), std::cend(samples));
 
-    // Populate display histogram
-    const size_t bin_count{41};
-    const size_t bin_width{samples.size() / bin_count};
-    std::map<size_t, uint32_t> hist;
-    for (auto i = std::cbegin(samples); i != std::cend(samples); ++i)
-      hist[std::distance(std::cbegin(samples), i) / bin_width] += *i;
-
     // Report histogram
-    for (const auto &[bin, value] : hist)
-      std::cout << bin * bin_width << '\t' << std::bitset<32>(abs(value))
-                << '\n';
+    std::cout << create_display_histogram(std::cbegin(samples),
+                                          std::cend(samples));
 
     // Stop timer and report stats
     const auto end  = std::chrono::system_clock::now();
