@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+// Structure of a WAV
 struct ac44 {
   uint32_t riff_id;
   uint32_t riff_size;
@@ -25,6 +26,7 @@ struct ac44 {
   uint32_t data_size;
 };
 
+// Dump a WAV header
 auto dump_meta(const ac44 &meta) {
   std::ostringstream out;
   out << std::hex << meta.wave_tag[0] << meta.wave_tag[1] << meta.wave_tag[2]
@@ -37,6 +39,7 @@ auto dump_meta(const ac44 &meta) {
   return out.str();
 }
 
+// Read WAV header from a stream
 auto get_meta(std::istream &in) {
 
   ac44 meta;
