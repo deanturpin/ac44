@@ -63,12 +63,19 @@ std::string create_display_histogram(iterator_t &begin, iterator_t &end) {
   // Create display histogram
   const size_t bin_count{37};
   const size_t bin_width{std::distance(begin, end) / bin_count};
-  std::map<size_t, int64_t> hist;
+  std::map<size_t, uint64_t> hist;
 
   // Populate display histogram by truncating the pulse index to fit it on
   // the screen
   for (auto i = begin; i != end; ++i)
-    hist[std::distance(begin, i) / bin_width] += *i;
+    hist[std::distance(begin, i) / bin_width] += std::abs(*i);
+
+  // Calculate max histogram bin to scale the display
+  const auto peak = std::max_element(std::cbegin(hist), std::cend(hist),
+                                     [](const auto &a, const auto &b) {
+                                       return a.second < b.second;
+                                     })
+                        ->second;
 
   // Report histogram
   std::stringstream out;
@@ -76,15 +83,11 @@ std::string create_display_histogram(iterator_t &begin, iterator_t &end) {
 
     // Calculate bar length for this bin
     const size_t max_bar_length = 70;
-    const size_t bar_length =
-        std::abs(value) / std::numeric_limits<int16_t>::max();
+    const size_t bar_length     = max_bar_length * value / peak;
 
-    // Construct histogram bar and mark if it's clipped
-    const std::string bar = bar_length > max_bar_length
-                                ? std::string(max_bar_length, '-') + "|"
-                                : std::string(bar_length, '-');
-
-    out << bar << '\n';
+    // Construct histogram bar and mark if it's clipped, always add one so we
+    // don't attempt to constrcut a zero length string
+    out << std::string(1 + bar_length, '-') + "|" << '\n';
   }
 
   return out.str();
@@ -115,7 +118,7 @@ int main() {
     const auto start = clock::now();
 
     // Calculate peak sample
-    const decltype(samples)::value_type peak =
+    const auto peak =
         std::abs(*std::max_element(std::cbegin(samples), std::cend(samples),
                                    [](const auto &a, const auto &b) {
                                      return std::abs(a) < std::abs(b);
