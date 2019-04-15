@@ -2,6 +2,7 @@
 #include <bitset>
 #include <cassert>
 #include <chrono>
+#include <cmath>
 #include <iostream>
 #include <map>
 #include <numeric>
@@ -60,7 +61,7 @@ std::string create_display_histogram(iterator_t &begin, iterator_t &end) {
   // Create display histogram
   const size_t bin_count{37};
   const size_t bin_width{std::distance(begin, end) / bin_count};
-  std::map<size_t, uint32_t> hist;
+  std::map<size_t, int64_t> hist;
 
   // Populate display histogram by truncating the pulse index to fit it on
   // the screen
@@ -73,7 +74,8 @@ std::string create_display_histogram(iterator_t &begin, iterator_t &end) {
 
     // Calculate bar length for this bin
     const size_t max_bar_length = 70;
-    const size_t bar_length = abs(value) / std::numeric_limits<int16_t>::max();
+    const size_t bar_length =
+        std::abs(value) / std::numeric_limits<int16_t>::max();
 
     // Mark the bar if it's clipped
     const std::string bar = bar_length > max_bar_length
@@ -104,15 +106,17 @@ int main() {
     // Start timer
     const auto start = clock::now();
 
-    // Calculate peaks
-    const auto &[min, max] =
-        std::minmax_element(std::cbegin(samples), std::cend(samples));
+    // Calculate peak sample
+    const decltype(samples)::value_type peak =
+        std::abs(*std::max_element(std::cbegin(samples), std::cend(samples),
+                                   [](const auto &a, const auto &b) {
+                                     return std::abs(a) < std::abs(b);
+                                   }));
 
     // Stop timer and report stats
     const auto end  = clock::now();
     const auto diff = duration_cast<microseconds>(end - start);
-    std::cout << dump_meta(meta) << *min << '\t' << *max << '\t' << diff.count()
-              << " us\n"
+    std::cout << dump_meta(meta) << peak << '\t' << diff.count() << " us\n"
               << create_display_histogram(std::cbegin(samples),
                                           std::cend(samples));
     ;
