@@ -89,12 +89,13 @@ std::string create_display_histogram(iterator_t &begin, iterator_t &end) {
 int main() {
 
   // Read the header
-  const auto &meta = get_meta(std::cin);
+  auto &in         = std::cin;
+  const auto &meta = get_meta(in);
 
   // Read batches of samples
   std::vector<sample_t> samples(meta.sample_rate);
-  while (std::cin.read(reinterpret_cast<char *>(samples.data()),
-                       samples.size() * sizeof(sample_t))) {
+  while (in.read(reinterpret_cast<char *>(samples.data()),
+                 samples.size() * sizeof(sample_t))) {
 
     using clock = std::chrono::high_resolution_clock;
     using std::chrono::duration_cast;
