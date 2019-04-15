@@ -69,8 +69,19 @@ std::string create_display_histogram(iterator_t &begin, iterator_t &end) {
 
   // Report histogram
   std::stringstream out;
-  for (const auto &[bin, value] : hist)
-    out << bin * bin_width << '\t' << std::bitset<32>(abs(value)) << '\n';
+  for (const auto &[bin, value] : hist) {
+
+    // Calculate bar length for this bin
+    const size_t max_bar_length = 70;
+    const size_t bar_length = abs(value) / std::numeric_limits<int16_t>::max();
+
+    // Mark the bar if it's clipped
+    const std::string bar = bar_length > max_bar_length
+                                ? std::string(max_bar_length, '-') + "|"
+                                : std::string(bar_length, '-');
+
+    out << bar << '\n';
+  }
 
   return out.str();
 }
