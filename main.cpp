@@ -77,7 +77,7 @@ std::string create_display_histogram(iterator_t &begin, iterator_t &end) {
     const size_t bar_length =
         std::abs(value) / std::numeric_limits<int16_t>::max();
 
-    // Mark the bar if it's clipped
+    // Construct histogram bar and mark if it's clipped
     const std::string bar = bar_length > max_bar_length
                                 ? std::string(max_bar_length, '-') + "|"
                                 : std::string(bar_length, '-');
