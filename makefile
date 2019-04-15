@@ -4,7 +4,7 @@ FLAGS = --std=c++2a --all-warnings --extra-warnings -Wno-address \
 	-Werror -Wshadow -Wfloat-equal -Weffc++ -Wdelete-non-virtual-dtor -O1
 
 tmp/%.o: %.cpp
-	$(CXX) $(FLAGS) -o $@ $< 
+	$(CXX) $(FLAGS) -o $@ $<
 
 all: tmp tmp/main.o run
 
