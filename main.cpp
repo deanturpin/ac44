@@ -96,8 +96,9 @@ int main() {
   while (std::cin.read(reinterpret_cast<char *>(samples.data()),
                        samples.size() * sizeof(sample_t))) {
 
-    using namespace std::chrono;
-    using clock = high_resolution_clock;
+    using clock = std::chrono::high_resolution_clock;
+    using std::chrono::duration_cast;
+    using std::chrono::microseconds;
 
     // Start timer
     const auto start = clock::now();
