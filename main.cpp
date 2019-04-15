@@ -29,19 +29,6 @@ struct ac44 {
   uint32_t data_size{};
 };
 
-// Dump a WAV header
-auto dump_meta(const ac44 &meta) {
-  std::ostringstream out;
-  out << std::hex << meta.wave_tag[0] << meta.wave_tag[1] << meta.wave_tag[2]
-      << meta.wave_tag[3] << '\n'
-      << std::hex << meta.sample_rate << " sample rate\n"
-      << std::hex << meta.data_size << " bytes of samples\n"
-      << std::dec << meta.channels << " channel"
-      << (meta.channels > 1 ? "s" : "") << '\n';
-
-  return out.str();
-}
-
 // Read WAV header from a stream
 auto get_meta(std::istream &in) {
 
@@ -61,7 +48,7 @@ using iterator_t = const std::vector<sample_t>::const_iterator;
 std::string create_display_histogram(iterator_t &begin, iterator_t &end) {
 
   // Create display histogram
-  const size_t bin_count{37};
+  const size_t bin_count{41};
   const size_t bin_width{std::distance(begin, end) / bin_count};
   std::map<size_t, uint64_t> hist;
 
@@ -87,16 +74,10 @@ std::string create_display_histogram(iterator_t &begin, iterator_t &end) {
 
     // Construct histogram bar and mark if it's clipped, always add one so we
     // don't attempt to constrcut a zero length string
-    out << std::string(1 + bar_length, '-') + "|" << '\n';
+    out << std::string(1 + bar_length, '-') << '\n';
   }
 
   return out.str();
-}
-
-// Dump all samples to a spreadsheet
-void dump_to_file(iterator_t &begin, iterator_t &end) {
-  if (std::ofstream csv{"tmp/mic.csv"}; csv.good())
-    std::copy(begin, end, std::ostream_iterator<sample_t>(csv, "\n"));
 }
 
 int main() {
@@ -132,8 +113,8 @@ int main() {
     // Stop timer and report stats
     const auto end  = clock::now();
     const auto diff = duration_cast<microseconds>(end - start);
-    std::cout << dump_meta(meta) << peak << '\t' << std::bitset<16>(id) << '\t'
-              << diff.count() << " us\n"
+    std::cout << peak << '\t' << std::bitset<16>(id) << '\t' << diff.count()
+              << " us\n"
               << create_display_histogram(std::cbegin(samples),
                                           std::cend(samples));
   }
