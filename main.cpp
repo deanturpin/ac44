@@ -11,19 +11,19 @@
 
 // Structure of a WAV
 struct ac44 {
-  uint32_t riff_id;
-  uint32_t riff_size;
-  char wave_tag[4];
-  uint32_t format_id;
-  uint32_t format_size;
-  uint16_t format_tag;
-  uint16_t channels;
-  uint32_t sample_rate;
-  uint32_t bytes_per_second;
-  uint16_t block_align;
-  uint16_t bit_depth;
-  uint32_t data_id;
-  uint32_t data_size;
+  uint32_t riff_id{};
+  uint32_t riff_size{};
+  char wave_tag[4]{};
+  uint32_t format_id{};
+  uint32_t format_size{};
+  uint16_t format_tag{};
+  uint16_t channels{};
+  uint32_t sample_rate{};
+  uint32_t bytes_per_second{};
+  uint16_t block_align{};
+  uint16_t bit_depth{};
+  uint32_t data_id{};
+  uint32_t data_size{};
 };
 
 // Dump a WAV header
@@ -81,7 +81,7 @@ int main() {
   const auto &meta = get_meta(std::cin);
 
   // Read batches of samples
-  std::vector<sample_t> samples(44100 / 1);
+  std::vector<sample_t> samples(meta.sample_rate);
   while (std::cin.read(reinterpret_cast<char *>(samples.data()),
                        samples.size() * sizeof(sample_t))) {
 
