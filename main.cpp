@@ -3,7 +3,9 @@
 #include <cassert>
 #include <chrono>
 #include <cmath>
+#include <fstream>
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <numeric>
 #include <sstream>
@@ -88,6 +90,12 @@ std::string create_display_histogram(iterator_t &begin, iterator_t &end) {
   return out.str();
 }
 
+// Dump all samples to a spreadsheet
+void dump_to_file(iterator_t &begin, iterator_t &end) {
+  if (std::ofstream csv{"tmp/mic.csv"}; csv.good())
+    std::copy(begin, end, std::ostream_iterator<sample_t>(csv, "\n"));
+}
+
 int main() {
 
   // Read the header
@@ -125,6 +133,5 @@ int main() {
               << diff.count() << " us\n"
               << create_display_histogram(std::cbegin(samples),
                                           std::cend(samples));
-    ;
   }
 }
