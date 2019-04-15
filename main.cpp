@@ -113,10 +113,16 @@ int main() {
                                      return std::abs(a) < std::abs(b);
                                    }));
 
+    // Calculate bit template
+    sample_t id{};
+    std::for_each(std::cbegin(samples), std::cend(samples),
+                  [&](const auto &s) { id |= std::abs(s); });
+
     // Stop timer and report stats
     const auto end  = clock::now();
     const auto diff = duration_cast<microseconds>(end - start);
-    std::cout << dump_meta(meta) << peak << '\t' << diff.count() << " us\n"
+    std::cout << dump_meta(meta) << peak << '\t' << std::bitset<16>(id) << '\t'
+              << diff.count() << " us\n"
               << create_display_histogram(std::cbegin(samples),
                                           std::cend(samples));
     ;
