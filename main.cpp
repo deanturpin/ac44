@@ -97,17 +97,18 @@ int main() {
                        samples.size() * sizeof(sample_t))) {
 
     using namespace std::chrono;
+    using clock = high_resolution_clock;
 
     // Start timer
-    const auto start = system_clock::now();
+    const auto start = clock::now();
 
     // Calculate peaks
     const auto &[min, max] =
         std::minmax_element(std::cbegin(samples), std::cend(samples));
 
     // Stop timer and report stats
-    const auto end  = std::chrono::system_clock::now();
-    const auto diff = duration_cast<milliseconds>(end - start);
+    const auto end  = clock::now();
+    const auto diff = duration_cast<microseconds>(end - start);
     std::cout << dump_meta(meta) << *min << '\t' << *max << '\t' << diff.count()
               << " us\n"
               << create_display_histogram(std::cbegin(samples),
