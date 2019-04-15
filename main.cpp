@@ -86,10 +86,10 @@ int main() {
   auto &in         = std::cin;
   const auto &meta = get_meta(in);
 
-  // Read batches of samples
-  std::vector<sample_t> samples(meta.sample_rate);
-  while (in.read(reinterpret_cast<char *>(samples.data()),
-                 samples.size() * sizeof(sample_t))) {
+  // Read batches of s
+  std::vector<sample_t> s(meta.sample_rate);
+  while (in.read(reinterpret_cast<char *>(s.data()),
+                 s.size() * sizeof(sample_t))) {
 
     using clock = std::chrono::high_resolution_clock;
     using std::chrono::duration_cast;
@@ -99,23 +99,21 @@ int main() {
     const auto start = clock::now();
 
     // Calculate peak sample
-    const auto peak =
-        std::abs(*std::max_element(std::cbegin(samples), std::cend(samples),
-                                   [](const auto &a, const auto &b) {
-                                     return std::abs(a) < std::abs(b);
-                                   }));
+    const auto peak = std::abs(*std::max_element(
+        std::cbegin(s), std::cend(s), [](const auto &a, const auto &b) {
+          return std::abs(a) < std::abs(b);
+        }));
 
     // Calculate bit template
     sample_t id{};
-    std::for_each(std::cbegin(samples), std::cend(samples),
-                  [&](const auto &s) { id |= std::abs(s); });
+    std::for_each(std::cbegin(s), std::cend(s),
+                  [&](const auto &sample) { id |= std::abs(sample); });
 
     // Stop timer and report stats
     const auto end  = clock::now();
     const auto diff = duration_cast<microseconds>(end - start);
     std::cout << peak << '\t' << std::bitset<16>(id) << '\t' << diff.count()
               << " us\n"
-              << create_display_histogram(std::cbegin(samples),
-                                          std::cend(samples));
+              << create_display_histogram(std::cbegin(s), std::cend(s));
   }
 }
