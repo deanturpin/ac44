@@ -55,7 +55,7 @@ std::string report(const iterator_t &begin, const iterator_t &end) {
 
     // Find the peak so we can scale the output
     static int16_t max_so_far = 1;
-    max_so_far = std::max(max_so_far, *std::max_element(begin, end));
+    const int16_t new_max = std::max(max_so_far, *std::max_element(begin, end));
 
     // Calculate bar length for this bin
     const std::size_t max_bar_length = 75;
@@ -64,10 +64,11 @@ std::string report(const iterator_t &begin, const iterator_t &end) {
 
     // Construct histogram bar and mark if it's clipped, always add one so we
     // don't attempt to constrcut a zero length string
-    out << std::string(1 + bar_length, '-') << '\n';
+    out << std::string(std::clamp(bar_length, 1ul, max_bar_length), '-')
+        << (bar_length > max_bar_length ? "<" : "") << '\n';
 
     // Fade the max scale
-    max_so_far = std::max(max_so_far - 300, 1);
+    max_so_far = std::max(new_max - 300, 1);
   }
 
   return out.str();
@@ -82,8 +83,9 @@ int main() {
   const auto &sample_rate = get_meta(in).sample_rate;
 
   // Read batches of samples
-  std::vector<sample_t> s(sample_rate);
-  while (
-      in.read(reinterpret_cast<char *>(s.data()), s.size() * sizeof(sample_t)))
-    std::cout << report(std::cbegin(s), std::cend(s));
+  std::vector<sample_t> samples(sample_rate);
+  const size_t bytes_in_batch{samples.size() * sizeof(sample_t)};
+
+  while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch))
+    std::cout << report(std::cbegin(samples), std::cend(samples));
 }
