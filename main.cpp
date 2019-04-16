@@ -42,10 +42,9 @@ int main() {
   const auto &sample_rate = get_sample_rate(in);
 
   // Read batches of samples
-  using sample_t = int16_t;
-  std::vector<sample_t> s(sample_rate);
+  std::vector<int16_t> s(sample_rate);
   while (in.read(reinterpret_cast<char *>(s.data()),
-                 s.size() * sizeof(sample_t))) {
+                 s.size() * sizeof(decltype(s)::value_type))) {
 
     // Report summary of batch by splitting into blocks
     const size_t x = 4000;
@@ -61,7 +60,10 @@ int main() {
       const auto end   = std::prev(std::cend(s), x);
 
       // Find the peak so we can scale the output
-      uint32_t max_so_far = *std::max_element(begin, end);
+      // static int16_t max_so_far = 0; // std::numeric_limits<int16_t>::max();
+      // const auto max_so_far = std::max(max_so_far, *std::max_element(begin,
+      // end));
+      const auto max_so_far = *std::max_element(begin, end);
 
       // Calculate bar length for this bin
       const size_t max_bar_length = 65;
