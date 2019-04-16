@@ -47,12 +47,12 @@ int main() {
                  s.size() * sizeof(decltype(s)::value_type))) {
 
     // Report summary of batch by splitting into blocks
-    const size_t x = 4000;
+    const size_t x = 3000;
     for (auto i = std::cbegin(s); i < std::prev(std::cend(s), x); i += x) {
       const auto average_amplitude =
           std::accumulate(
               i, std::next(i, x), 0,
-              [](auto sum = 0, const auto &a) { return sum += std::abs(a); }) /
+              [](auto &sum, const auto &a) { return sum += std::abs(a); }) /
           x;
 
       // Start and end for current block
@@ -60,10 +60,8 @@ int main() {
       const auto end   = std::prev(std::cend(s), x);
 
       // Find the peak so we can scale the output
-      // static int16_t max_so_far = 0; // std::numeric_limits<int16_t>::max();
-      // const auto max_so_far = std::max(max_so_far, *std::max_element(begin,
-      // end));
-      const auto max_so_far = *std::max_element(begin, end);
+      static int16_t max_so_far = 1;
+      max_so_far = std::max(max_so_far, *std::max_element(begin, end));
 
       // Calculate bar length for this bin
       const size_t max_bar_length = 65;
@@ -71,7 +69,10 @@ int main() {
 
       // Construct histogram bar and mark if it's clipped, always add one so we
       // don't attempt to constrcut a zero length string
-      std::cout << std::string(1 + bar_length, '-') << '|' << '\n';
+      std::cout << std::string(1 + bar_length, '-') << '\n';
+
+      // Fade the max scale
+      max_so_far = std::max(max_so_far - 200, 1);
     }
   }
 }
