@@ -44,7 +44,7 @@ std::string report(const iterator_t &begin, const iterator_t &end) {
 
   std::ostringstream out;
 
-  const std::size_t x = 3000;
+  const std::vector<sample_t>::size_type x = 3000;
   for (auto i = begin; i < std::prev(end, x); i += x) {
     const auto average_amplitude =
         std::accumulate(
