@@ -42,7 +42,7 @@ using sample_t   = int16_t;
 using iterator_t = std::vector<sample_t>::const_iterator;
 std::string report(const iterator_t &begin, const iterator_t &end) {
 
-  std::stringstream out;
+  std::ostringstream out;
 
   const size_t x = 3000;
   for (auto i = begin; i < std::prev(end, x); i += x) {
