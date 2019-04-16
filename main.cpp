@@ -7,33 +7,34 @@
 #include <string>
 #include <vector>
 
+// Structure of a WAV
+struct ac44 {
+  uint32_t riff_id{};
+  uint32_t riff_size{};
+  char wave_tag[4]{};
+  uint32_t format_id{};
+  uint32_t format_size{};
+  uint16_t format_tag{};
+  uint16_t channels{};
+  uint32_t sample_rate{};
+  uint32_t bytes_per_second{};
+  uint16_t block_align{};
+  uint16_t bit_depth{};
+  uint32_t data_id{};
+  uint32_t data_size{};
+};
+
 // Read WAV header from a stream and return sample rate
-uint32_t get_sample_rate(std::istream &in) {
+ac44 get_meta(std::istream &in) {
 
-  // Structure of a WAV
-  struct ac44 {
-    uint32_t riff_id{};
-    uint32_t riff_size{};
-    char wave_tag[4]{};
-    uint32_t format_id{};
-    uint32_t format_size{};
-    uint16_t format_tag{};
-    uint16_t channels{};
-    uint32_t sample_rate{};
-    uint32_t bytes_per_second{};
-    uint16_t block_align{};
-    uint16_t bit_depth{};
-    uint32_t data_id{};
-    uint32_t data_size{};
-  } meta;
-
+  ac44 meta;
   assert(sizeof(meta) == 44);
 
   // Check file is good and read the meta data
   if (in.good())
     in.read(reinterpret_cast<char *>(&meta), sizeof meta);
 
-  return meta.sample_rate;
+  return meta;
 }
 
 // Report summary of batch by splitting into blocks
@@ -72,14 +73,15 @@ std::string report(const iterator_t &begin, const iterator_t &end) {
 
 int main() {
 
-  // Read the header
-  auto &in                = std::cin;
-  const auto &sample_rate = get_sample_rate(in);
+  // Define source of audio
+  auto &in = std::cin;
+
+  // Get the meta data
+  const auto &sample_rate = get_meta(in).sample_rate;
 
   // Read batches of samples
   std::vector<sample_t> s(sample_rate);
-  const size_t count = s.size();
-  const size_t size  = sizeof(sample_t);
-  while (in.read(reinterpret_cast<char *>(s.data()), count * size))
+  while (
+      in.read(reinterpret_cast<char *>(s.data()), s.size() * sizeof(sample_t)))
     std::cout << report(std::cbegin(s), std::cend(s));
 }
