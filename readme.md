@@ -15,4 +15,15 @@ cat /proc/asound/pcm
 
 xxd /dev/snd/pcmC0D0c
 xxd: File descriptor in bad state
+
+cat /dev/input/by-path/platform-i8042-serio-0-event-kbd
+xxd /dev/input/event0
 ```
+
+ALSA dev
+```
+apt install libasound2-dev -y
+```
+
+Link with -lasound
+
