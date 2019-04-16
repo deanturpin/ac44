@@ -82,10 +82,11 @@ int main() {
   // Get the meta data
   const auto &sample_rate = get_meta(in).sample_rate;
 
-  // Read batches of samples
+  // Prepare container to read a batch of samples
   std::vector<sample_t> samples(sample_rate);
   const size_t bytes_in_batch{samples.size() * sizeof(sample_t)};
 
+  // Repeatedly read batches of samples and report stats until read fails
   while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch))
     std::cout << report(std::cbegin(samples), std::cend(samples));
 }
