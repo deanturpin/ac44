@@ -44,7 +44,7 @@ std::string report(const iterator_t &begin, const iterator_t &end) {
 
   std::ostringstream out;
 
-  const size_t x = 3000;
+  const std::size_t x = 3000;
   for (auto i = begin; i < std::prev(end, x); i += x) {
     const auto average_amplitude =
         std::accumulate(
@@ -57,8 +57,9 @@ std::string report(const iterator_t &begin, const iterator_t &end) {
     max_so_far = std::max(max_so_far, *std::max_element(begin, end));
 
     // Calculate bar length for this bin
-    const size_t max_bar_length = 75;
-    const size_t bar_length = max_bar_length * average_amplitude / max_so_far;
+    const std::size_t max_bar_length = 75;
+    const std::size_t bar_length =
+        max_bar_length * average_amplitude / max_so_far;
 
     // Construct histogram bar and mark if it's clipped, always add one so we
     // don't attempt to constrcut a zero length string
