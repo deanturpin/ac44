@@ -9,3 +9,10 @@ $ xxd tmp/long.raw | head -2
                                |
 ac44 is 44100Hz in hex --------|
 ```
+
+```
+cat /proc/asound/pcm
+
+xxd /dev/snd/pcmC0D0c
+xxd: File descriptor in bad state
+```
