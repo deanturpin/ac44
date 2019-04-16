@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iostream>
 #include <numeric>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -35,6 +36,40 @@ uint32_t get_sample_rate(std::istream &in) {
   return meta.sample_rate;
 }
 
+// Report summary of batch by splitting into blocks
+using sample_t   = int16_t;
+using iterator_t = std::vector<sample_t>::const_iterator;
+std::string report(const iterator_t &begin, const iterator_t &end) {
+
+  std::stringstream out;
+
+  const size_t x = 3000;
+  for (auto i = begin; i < std::prev(end, x); i += x) {
+    const auto average_amplitude =
+        std::accumulate(
+            i, std::next(i, x), 0,
+            [](auto &sum, const auto &a) { return sum += std::abs(a); }) /
+        x;
+
+    // Find the peak so we can scale the output
+    static int16_t max_so_far = 1;
+    max_so_far = std::max(max_so_far, *std::max_element(begin, end));
+
+    // Calculate bar length for this bin
+    const size_t max_bar_length = 75;
+    const size_t bar_length = max_bar_length * average_amplitude / max_so_far;
+
+    // Construct histogram bar and mark if it's clipped, always add one so we
+    // don't attempt to constrcut a zero length string
+    out << std::string(1 + bar_length, '-') << '\n';
+
+    // Fade the max scale
+    max_so_far = std::max(max_so_far - 300, 1);
+  }
+
+  return out.str();
+}
+
 int main() {
 
   // Read the header
@@ -42,37 +77,9 @@ int main() {
   const auto &sample_rate = get_sample_rate(in);
 
   // Read batches of samples
-  std::vector<int16_t> s(sample_rate);
-  while (in.read(reinterpret_cast<char *>(s.data()),
-                 s.size() * sizeof(decltype(s)::value_type))) {
-
-    // Report summary of batch by splitting into blocks
-    const size_t x = 3000;
-    for (auto i = std::cbegin(s); i < std::prev(std::cend(s), x); i += x) {
-      const auto average_amplitude =
-          std::accumulate(
-              i, std::next(i, x), 0,
-              [](auto &sum, const auto &a) { return sum += std::abs(a); }) /
-          x;
-
-      // Start and end for current block
-      const auto begin = i;
-      const auto end   = std::prev(std::cend(s), x);
-
-      // Find the peak so we can scale the output
-      static int16_t max_so_far = 1;
-      max_so_far = std::max(max_so_far, *std::max_element(begin, end));
-
-      // Calculate bar length for this bin
-      const size_t max_bar_length = 65;
-      const size_t bar_length = max_bar_length * average_amplitude / max_so_far;
-
-      // Construct histogram bar and mark if it's clipped, always add one so we
-      // don't attempt to constrcut a zero length string
-      std::cout << std::string(1 + bar_length, '-') << '\n';
-
-      // Fade the max scale
-      max_so_far = std::max(max_so_far - 200, 1);
-    }
-  }
+  std::vector<sample_t> s(sample_rate);
+  const size_t count = s.size();
+  const size_t size  = sizeof(sample_t);
+  while (in.read(reinterpret_cast<char *>(s.data()), count * size))
+    std::cout << report(std::cbegin(s), std::cend(s));
 }
