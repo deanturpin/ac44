@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <iostream>
 #include <numeric>
 #include <sstream>
@@ -9,19 +10,19 @@
 
 // Structure of a WAV
 struct ac44 {
-  uint32_t riff_id{};
-  uint32_t riff_size{};
-  char wave_tag[4]{};
-  uint32_t format_id{};
-  uint32_t format_size{};
-  uint16_t format_tag{};
-  uint16_t channels{};
-  uint32_t sample_rate{};
-  uint32_t bytes_per_second{};
-  uint16_t block_align{};
-  uint16_t bit_depth{};
-  uint32_t data_id{};
-  uint32_t data_size{};
+  std::uint32_t riff_id{};
+  std::uint32_t riff_size{};
+  std::uint32_t wave_tag{};
+  std::uint32_t format_id{};
+  std::uint32_t format_size{};
+  std::uint16_t format_tag{};
+  std::uint16_t channels{};
+  std::uint32_t sample_rate{};
+  std::uint32_t bytes_per_second{};
+  std::uint16_t block_align{};
+  std::uint16_t bit_depth{};
+  std::uint32_t data_id{};
+  std::uint32_t data_size{};
 };
 
 // Read WAV header from a stream and return sample rate
@@ -44,7 +45,7 @@ std::string report(const iterator_t &begin, const iterator_t &end) {
 
   std::ostringstream out;
 
-  const std::vector<sample_t>::size_type x = 3000;
+  const std::ptrdiff_t x = 3000;
   for (auto i = begin; i < std::prev(end, x); i += x) {
     const auto average_amplitude =
         std::accumulate(
