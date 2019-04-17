@@ -38,6 +38,13 @@ ac44 get_meta(std::istream &in) {
   return meta;
 }
 
+// void write_meta(std::ostream &out, const ac44 &meta) {
+//
+//   // Check file is good and read the meta data
+//   if (out.good())
+//     out.write(reinterpret_cast<char *>(&meta), sizeof meta);
+// }
+
 // Report summary of batch by splitting into blocks
 using sample_t   = int16_t;
 using iterator_t = std::vector<sample_t>::const_iterator;
@@ -77,16 +84,30 @@ std::string report(const iterator_t &begin, const iterator_t &end) {
 int main() {
 
   // Define source of audio
-  auto &in = std::cin;
+  auto &in  = std::cin;
+  auto &out = std::cout;
 
   // Get the meta data
-  const auto &sample_rate = get_meta(in).sample_rate;
+  ac44 meta = get_meta(in);
+  // const auto &sample_rate = meta.sample_rate;
+
+  // Emit the header
+  out.write(reinterpret_cast<char *>(&meta), sizeof meta);
 
   // Prepare container to read a batch of samples
-  std::vector<sample_t> samples(sample_rate);
+  std::vector<sample_t> samples(1000);
   const size_t bytes_in_batch{samples.size() * sizeof(sample_t)};
 
   // Repeatedly read batches of samples and report stats until read fails
-  while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch))
-    std::cout << report(std::cbegin(samples), std::cend(samples));
+  while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch)) {
+
+    // std::cerr << report(std::cbegin(samples), std::cend(samples));
+
+    // Invert the samples
+    for (auto &s : samples)
+      s = -s;
+
+    // Emit the audio
+    out.write(reinterpret_cast<char *>(&samples[0]), bytes_in_batch);
+  }
 }
