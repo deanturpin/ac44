@@ -6,6 +6,7 @@
 #include <numeric>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <vector>
 
 // Structure of a WAV
@@ -87,7 +88,7 @@ int main() {
   auto &in  = std::cin;
   auto &out = std::cout;
 
-  // Get the meta data
+  // Consume the meta data
   ac44 meta = get_meta(in);
   // const auto &sample_rate = meta.sample_rate;
 
@@ -95,19 +96,43 @@ int main() {
   out.write(reinterpret_cast<char *>(&meta), sizeof meta);
 
   // Prepare container to read a batch of samples
-  std::vector<sample_t> samples(1000);
+  std::vector<sample_t> samples(44100 / 4);
   const size_t bytes_in_batch{samples.size() * sizeof(sample_t)};
 
-  // Repeatedly read batches of samples and report stats until read fails
-  while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch)) {
+  // Read a batch and ditch them
+  // in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch);
 
-    // std::cerr << report(std::cbegin(samples), std::cend(samples));
+  while (1) {
+
+    // Read a batch
+    in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch);
 
     // Invert the samples
     for (auto &s : samples)
-      s = -s;
+      s = s * 2;
+
+    // Pause before emitting audio
+    static uint32_t pause = 0;
+    std::this_thread::sleep_for(std::chrono::microseconds(pause));
+
+    pause += 10;
+    if (pause > 100000)
+      pause = 0;
 
     // Emit the audio
-    out.write(reinterpret_cast<char *>(&samples[0]), bytes_in_batch);
+    static size_t phase = 0;
+    size_t len          = samples.size();
+    for (size_t i = 0; i < len; ++i)
+      out.write(reinterpret_cast<char *>(&samples[(i + phase) % len]),
+                sizeof(sample_t));
+
+    // for (size_t i = 0; i < len; ++i)
+    //   out.write(reinterpret_cast<char *>(&samples[len - i - 1]),
+    //   sizeof(sample_t));
+
+    // ++phase;
+    // // ++iterations;
+    // if (!(phase % 100))
+    //   std::cerr << phase << "\n";
   }
 }

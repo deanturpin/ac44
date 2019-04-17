@@ -24,6 +24,7 @@ ALSA dev
 ```
 apt install libasound2-dev -y
 ```
-
 Link with -lasound
+
+- https://soundprogramming.net/programming/alsa-tutorial-1-initialization/
 
