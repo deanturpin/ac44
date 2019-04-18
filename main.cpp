@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cmath>
 #include <complex>
@@ -40,33 +41,35 @@ ac44 get_meta(std::istream &in) {
 }
 
 // Initialse twiddle matrix
-auto fourier_init(const size_t &bins) {
+auto fourier_init() {
 
   using namespace std::complex_literals;
 
+  const size_t bins{320};
+
   // Declare container for twiddle matrix
-  std::vector<std::complex<double>> twiddle;
-  twiddle.reserve(bins * bins / 2);
+  std::array<std::complex<double>, bins * bins / 2> twiddle;
 
   // Populate twiddle matrix
   for (size_t k = 0; k < bins / 2; ++k)
     for (size_t n = 0; n < bins; ++n)
-      twiddle.push_back(exp(2i * M_PI * double(k) * double(n) / double(bins)));
+      twiddle[n + (k * bins)] =
+          exp(2i * M_PI * double(k) * double(n) / double(bins));
 
   return twiddle;
 }
 
 using sample_t = int16_t;
-std::vector<double> get_fourier(const std::vector<sample_t> &samples,
-                                const size_t bins = 40) {
-
-  // Initialise results container and reserve enough space for the bins
-  std::vector<double> fourier;
-  fourier.reserve(bins);
+std::vector<double> get_fourier(const std::vector<sample_t> &samples) {
 
   // Initialise twiddle matrix on first call
-  static const auto twiddle = fourier_init(bins);
+  static const auto twiddle = fourier_init();
   std::cout << twiddle.size() << " twiddle entries\n";
+
+  // Initialise results container and reserve enough space for the bins
+  const size_t bins{320};
+  std::vector<double> fourier;
+  fourier.reserve(bins);
 
   // Calculate Fourier response
   for (size_t k = 0; k < bins / 2; ++k) {
@@ -101,7 +104,7 @@ int main() {
   while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch)) {
 
     // Get Fourier transform for this batch
-    const auto fourier = get_fourier(samples, 320);
+    const auto fourier = get_fourier(samples);
 
     // Calculate the max so we can scale the output
     const double max_bin =
