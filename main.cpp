@@ -27,7 +27,7 @@ struct ac44 {
   std::uint32_t data_size{};
 };
 
-const size_t fourier_bins = 4 * 1024;
+const size_t fourier_bins = 320;
 
 // Read WAV header from a stream and return sample rate
 ac44 get_meta(std::istream &in) {
@@ -89,6 +89,22 @@ std::vector<double> get_fourier(const std::vector<sample_t> &samples) {
   return fourier;
 }
 
+using iterator_t = std::vector<double>::const_iterator;
+std::string dump_histogram(const iterator_t &begin, const iterator_t &end) {
+
+  // Calculate the max so we can scale the output
+  const double max_bin   = std::log2(*std::max_element(begin, end));
+  const size_t max_width = 350;
+
+  std::ostringstream out;
+  std::for_each(begin, end, [&](const auto &bin) {
+    out << std::string(1 + std::rint(max_width * std::log2(bin) / max_bin), '#')
+        << '\n';
+  });
+
+  return out.str();
+}
+
 int main() {
 
   // Define source of audio
@@ -107,13 +123,6 @@ int main() {
     // Get Fourier transform for this batch
     const auto fourier = get_fourier(samples);
 
-    // Calculate the max so we can scale the output
-    const double max_bin =
-        *std::max_element(std::cbegin(fourier), std::cend(fourier));
-
-    // Dump Fourier results
-    for (const auto &bin : fourier)
-      std::cout << std::string(1 + std::rint(350.0 * bin / max_bin), '-')
-                << '\n';
+    std::cout << dump_histogram(std::cbegin(fourier), std::cend(fourier));
   }
 }
