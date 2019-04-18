@@ -27,6 +27,8 @@ struct ac44 {
   std::uint32_t data_size{};
 };
 
+const size_t fourier_bins = 4 * 1024;
+
 // Read WAV header from a stream and return sample rate
 ac44 get_meta(std::istream &in) {
 
@@ -45,7 +47,7 @@ auto fourier_init() {
 
   using namespace std::complex_literals;
 
-  const size_t bins{320};
+  const size_t bins{fourier_bins};
 
   // Declare container for twiddle matrix
   std::array<std::complex<double>, bins * bins / 2> twiddle;
@@ -64,10 +66,9 @@ std::vector<double> get_fourier(const std::vector<sample_t> &samples) {
 
   // Initialise twiddle matrix on first call
   static const auto twiddle = fourier_init();
-  std::cout << twiddle.size() << " twiddle entries\n";
 
   // Initialise results container and reserve enough space for the bins
-  const size_t bins{320};
+  const size_t bins{fourier_bins};
   std::vector<double> fourier;
   fourier.reserve(bins);
 
