@@ -46,10 +46,10 @@ auto fourier_init(const size_t &bins) {
 
   // Declare container for twiddle matrix
   std::vector<std::complex<double>> twiddle;
-  twiddle.reserve(bins * bins);
+  twiddle.reserve(bins * bins / 2);
 
   // Populate twiddle matrix
-  for (size_t k = 0; k < bins; ++k)
+  for (size_t k = 0; k < bins / 2; ++k)
     for (size_t n = 0; n < bins; ++n)
       twiddle.push_back(exp(2i * M_PI * double(k) * double(n) / double(bins)));
 
@@ -69,7 +69,7 @@ std::vector<double> get_fourier(const std::vector<sample_t> &samples,
   std::cout << twiddle.size() << " twiddle entries\n";
 
   // Calculate Fourier response
-  for (size_t k = 0; k < bins; ++k) {
+  for (size_t k = 0; k < bins / 2; ++k) {
 
     // We want to calculate the sum of all responses
     std::complex<double> sum{};
@@ -100,13 +100,16 @@ int main() {
   // Repeatedly read batches of samples and report stats until read fails
   while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch)) {
 
+    // Get Fourier transform for this batch
     const auto fourier = get_fourier(samples, 160);
-    std::cout << samples.size() << " samples " << fourier.size()
-              << " Fourier size\n";
 
+    // Calculate the max so we can scale the output
     const double max_bin =
         *std::max_element(std::cbegin(fourier), std::cend(fourier));
+
+    // Dump Fourier results
     for (const auto &bin : fourier)
-      std::cout << std::string(std::rint(350.0 * bin / max_bin), '-') << '\n';
+      std::cout << std::string(1 + std::rint(350.0 * bin / max_bin), '-')
+                << '\n';
   }
 }
