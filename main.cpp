@@ -65,7 +65,7 @@ using sample_t = int16_t;
 std::vector<double> get_fourier(const std::vector<sample_t> &samples) {
 
   // Initialise twiddle matrix on first call
-  static const auto twiddle = fourier_init();
+  static const auto &twiddle = fourier_init();
 
   // Initialise results container and reserve enough space for the bins
   const size_t bins{fourier_bins};
@@ -89,6 +89,7 @@ std::vector<double> get_fourier(const std::vector<sample_t> &samples) {
   return fourier;
 }
 
+// Create text representation of basic histogram
 using iterator_t = std::vector<double>::const_iterator;
 std::string dump_histogram(const iterator_t &begin, const iterator_t &end) {
 
@@ -103,6 +104,17 @@ std::string dump_histogram(const iterator_t &begin, const iterator_t &end) {
   });
 
   return out.str();
+}
+
+// Create text representation of histogram with a log X axis
+std::string dump_log_histogram(const iterator_t &begin, const iterator_t &end) {
+
+  // Construct log histogram
+  // std::vector<double> log_histogram;
+  // std::for_each(begin, end, );
+
+  // Pass log histogram to basic histogram routine
+  return dump_histogram(begin, end);
 }
 
 int main() {
@@ -123,6 +135,6 @@ int main() {
     // Get Fourier transform for this batch
     const auto fourier = get_fourier(samples);
 
-    std::cout << dump_histogram(std::cbegin(fourier), std::cend(fourier));
+    std::cout << dump_log_histogram(std::cbegin(fourier), std::cend(fourier));
   }
 }
