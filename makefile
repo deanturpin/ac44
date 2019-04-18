@@ -6,14 +6,14 @@ FLAGS = --std=c++2a --all-warnings --extra-warnings -Wno-address \
 tmp/%.o: %.cpp
 	$(CXX) $(FLAGS) -o $@ $<
 
-all: tmp tmp/main.o run
+all: tmp tmp/main.o noise
 
 tmp:
 	mkdir $@
 
 params = -q -f S16_LE -c 1 -r 44100
 
-run:
+noise:
 	arecord $(params) | tmp/main.o
 
 clean:

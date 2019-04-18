@@ -1,11 +1,9 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <cmath>
 #include <complex>
 #include <cstdint>
 #include <iostream>
-#include <numeric>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -27,7 +25,7 @@ struct ac44 {
   std::uint32_t data_size{};
 };
 
-const size_t fourier_bins = 5 * 1024;
+const size_t fourier_bins = 1024;
 
 // Read WAV header from a stream and return sample rate
 ac44 get_meta(std::istream &in) {
@@ -47,6 +45,8 @@ auto fourier_init() {
 
   using namespace std::complex_literals;
 
+  const double pi{
+      3.1415926535897932384626433832795028841971693993751058209749445923078164062};
   const size_t bins{fourier_bins};
 
   // Declare container for twiddle matrix
@@ -56,7 +56,7 @@ auto fourier_init() {
   for (size_t k = 0; k < bins / 2; ++k)
     for (size_t n = 0; n < bins; ++n)
       twiddle[n + (k * bins)] =
-          exp(2i * M_PI * double(k) * double(n) / double(bins));
+          exp(2i * pi * double(k) * double(n) / double(bins));
 
   return twiddle;
 }
@@ -93,15 +93,17 @@ std::vector<double> get_fourier(const std::vector<sample_t> &samples) {
 using iterator_t = std::vector<double>::const_iterator;
 std::string dump_histogram(const iterator_t &begin, const iterator_t &end) {
 
-  // Calculate the max so we can scale the output
-  const double max_bin   = std::log2(*std::max_element(begin, end));
+  // Calculate max bin so we can scale the output
+  const double max_bin{*std::max_element(begin, end)};
+
+  // Max width of a bar
   const size_t max_width = 70;
 
   std::ostringstream out;
   out << '\n';
   std::for_each(begin, end, [&](const auto &bin) {
-    out << std::string(1 + std::rint(max_width * std::log2(bin) / max_bin), '-')
-        << '\n';
+    out << std::string(1 + std::rint(max_width * bin / max_bin), '_')
+        << "\033[36m_\033[0m\n";
   });
 
   return out.str();
@@ -121,7 +123,7 @@ std::string dump_log_histogram(const iterator_t &begin, const iterator_t &end) {
     if (index >= log_histogram.size())
       log_histogram.push_back(0.0);
 
-    // Update
+    // Sum all the values that match a bin
     log_histogram.back() += s;
 
     ++n;
@@ -143,15 +145,14 @@ int main() {
   const auto &sample_rate = get_meta(in).sample_rate;
 
   // Prepare container to read a batch of samples
-  std::vector<sample_t> samples(sample_rate / 8);
+  std::vector<sample_t> samples(sample_rate / 16);
   const size_t bytes_in_batch{samples.size() * sizeof(sample_t)};
 
   // Repeatedly read batches of samples and report stats until read fails
   while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch)) {
 
-    // Get Fourier transform for this batch
-    const auto fourier = get_fourier(samples);
-
+    // Get Fourier transform for this batch and dump it
+    const auto &fourier = get_fourier(samples);
     std::cout << dump_log_histogram(std::cbegin(fourier), std::cend(fourier));
   }
 }
