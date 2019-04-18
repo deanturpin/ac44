@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <complex>
 #include <cstdint>
 #include <iostream>
 #include <numeric>
@@ -38,53 +39,50 @@ ac44 get_meta(std::istream &in) {
   return meta;
 }
 
-// Report summary of batch by splitting into blocks
-// using sample_t   = int16_t;
-// using iterator_t = std::vector<sample_t>::const_iterator;
-// std::string report(const iterator_t &begin, const iterator_t &end) {
-//
-//   std::ostringstream out;
-//
-//   const std::ptrdiff_t x = 3000;
-//   for (auto i = begin; i < std::prev(end, x); i += x) {
-//     const auto average_amplitude =
-//         std::accumulate(
-//             i, std::next(i, x), 0,
-//             [](auto &sum, const auto &a) { return sum += std::abs(a); }) /
-//         x;
-//
-//     // Find the peak so we can scale the output
-//     static int16_t max_so_far = 1;
-//     const int16_t new_max = std::max(max_so_far, *std::max_element(begin,
-//     end));
-//
-//     // Calculate bar length for this bin
-//     const std::size_t max_bar_length = 75;
-//     const std::size_t bar_length =
-//         max_bar_length * average_amplitude / max_so_far;
-//
-//     // Construct histogram bar and mark if it's clipped, always add one so we
-//     // don't attempt to constrcut a zero length string
-//     out << std::string(std::clamp(bar_length, 1ul, max_bar_length), '-')
-//         << (bar_length > max_bar_length ? "<" : "") << '\n';
-//
-//     // Fade the max scale
-//     max_so_far = std::max(new_max - 300, 1);
-//   }
-//
-//   return out.str();
-// }
+// Initialse twiddle matrix
+auto fourier_init(const size_t &bins) {
 
-using sample_t   = int16_t;
-using iterator_t = std::vector<sample_t>::const_iterator;
-std::vector<double> get_fourier(const iterator_t &begin, const iterator_t end) {
+  using namespace std::complex_literals;
+
+  // Declare container for twiddle matrix
+  std::vector<std::complex<double>> twiddle;
+  twiddle.reserve(bins * bins / 2);
+
+  // Populate twiddle matrix
+  for (size_t k = 0; k < bins; ++k)
+    for (size_t n = 0; n < bins; ++n)
+      twiddle.push_back(exp(2i * M_PI * double(k) * double(n) / double(bins)));
+
+  return twiddle;
+}
+
+using sample_t = int16_t;
+std::vector<double> get_fourier(const std::vector<sample_t> &samples) {
+
+  // Size of Fourier transform
+  const size_t bins = 40;
 
   // Initialise results container
   std::vector<double> fourier;
-  fourier.reserve(std::distance(begin, end));
+  fourier.reserve(samples.size());
 
-  // Copy in input container
-  std::copy(begin, end, std::back_inserter(fourier));
+  // Initialise twiddle matrix on first call
+  static const auto twiddle = fourier_init(100);
+  std::cout << twiddle.size() << " twiddle entries\n";
+
+  // Calculate Fourier response
+  for (size_t k = 0; k < bins; ++k) {
+
+    // We want to calculate the sum of all responses
+    std::complex<double> sum{};
+
+    // Calculate response for each sample
+    for (unsigned int n = 0; n < bins; ++n)
+      sum += twiddle[(k * bins) + n] * std::complex<double>(samples.at(n), 0);
+
+    // Store the absolute value of the complex sum
+    fourier.push_back(abs(sum));
+  }
 
   return fourier;
 }
@@ -102,10 +100,13 @@ int main() {
   const size_t bytes_in_batch{samples.size() * sizeof(sample_t)};
 
   // Repeatedly read batches of samples and report stats until read fails
-  while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch))
-    std::cout << samples.size() << " samples "
-              << get_fourier(std::cbegin(samples), std::cend(samples)).size()
+  while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch)) {
+
+    const auto fourier = get_fourier(samples);
+    std::cout << samples.size() << " samples " << fourier.size()
               << " Fourier size\n";
 
-  // std::cout << report(std::cbegin(samples), std::cend(samples));
+    for (const auto &bin : fourier)
+      std::cout << std::rint(bin) << '\n';
+  }
 }
