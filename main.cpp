@@ -39,39 +39,54 @@ ac44 get_meta(std::istream &in) {
 }
 
 // Report summary of batch by splitting into blocks
+// using sample_t   = int16_t;
+// using iterator_t = std::vector<sample_t>::const_iterator;
+// std::string report(const iterator_t &begin, const iterator_t &end) {
+//
+//   std::ostringstream out;
+//
+//   const std::ptrdiff_t x = 3000;
+//   for (auto i = begin; i < std::prev(end, x); i += x) {
+//     const auto average_amplitude =
+//         std::accumulate(
+//             i, std::next(i, x), 0,
+//             [](auto &sum, const auto &a) { return sum += std::abs(a); }) /
+//         x;
+//
+//     // Find the peak so we can scale the output
+//     static int16_t max_so_far = 1;
+//     const int16_t new_max = std::max(max_so_far, *std::max_element(begin,
+//     end));
+//
+//     // Calculate bar length for this bin
+//     const std::size_t max_bar_length = 75;
+//     const std::size_t bar_length =
+//         max_bar_length * average_amplitude / max_so_far;
+//
+//     // Construct histogram bar and mark if it's clipped, always add one so we
+//     // don't attempt to constrcut a zero length string
+//     out << std::string(std::clamp(bar_length, 1ul, max_bar_length), '-')
+//         << (bar_length > max_bar_length ? "<" : "") << '\n';
+//
+//     // Fade the max scale
+//     max_so_far = std::max(new_max - 300, 1);
+//   }
+//
+//   return out.str();
+// }
+
 using sample_t   = int16_t;
 using iterator_t = std::vector<sample_t>::const_iterator;
-std::string report(const iterator_t &begin, const iterator_t &end) {
+std::vector<double> get_fourier(const iterator_t &begin, const iterator_t end) {
 
-  std::ostringstream out;
+  // Initialise results container
+  std::vector<double> fourier;
+  fourier.reserve(std::distance(begin, end));
 
-  const std::ptrdiff_t x = 3000;
-  for (auto i = begin; i < std::prev(end, x); i += x) {
-    const auto average_amplitude =
-        std::accumulate(
-            i, std::next(i, x), 0,
-            [](auto &sum, const auto &a) { return sum += std::abs(a); }) /
-        x;
+  // Copy in input container
+  std::copy(begin, end, std::back_inserter(fourier));
 
-    // Find the peak so we can scale the output
-    static int16_t max_so_far = 1;
-    const int16_t new_max = std::max(max_so_far, *std::max_element(begin, end));
-
-    // Calculate bar length for this bin
-    const std::size_t max_bar_length = 75;
-    const std::size_t bar_length =
-        max_bar_length * average_amplitude / max_so_far;
-
-    // Construct histogram bar and mark if it's clipped, always add one so we
-    // don't attempt to constrcut a zero length string
-    out << std::string(std::clamp(bar_length, 1ul, max_bar_length), '-')
-        << (bar_length > max_bar_length ? "<" : "") << '\n';
-
-    // Fade the max scale
-    max_so_far = std::max(new_max - 300, 1);
-  }
-
-  return out.str();
+  return fourier;
 }
 
 int main() {
@@ -88,5 +103,9 @@ int main() {
 
   // Repeatedly read batches of samples and report stats until read fails
   while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch))
-    std::cout << report(std::cbegin(samples), std::cend(samples));
+    std::cout << samples.size() << " samples "
+              << get_fourier(std::cbegin(samples), std::cend(samples)).size()
+              << " Fourier size\n";
+
+  // std::cout << report(std::cbegin(samples), std::cend(samples));
 }
