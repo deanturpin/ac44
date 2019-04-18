@@ -26,7 +26,7 @@ struct ac44 {
   std::uint32_t data_size{};
 };
 
-const size_t fourier_bins = 1024;
+const size_t fourier_bins = 4 * 1024;
 
 // Read WAV header from a stream and return sample rate
 ac44 get_meta(std::istream &in) {
@@ -77,24 +77,15 @@ std::vector<double> get_fourier(const std::vector<sample_t> &samples) {
   for (size_t k = 0; k < bins / 2; ++k) {
 
     // We want to calculate the sum of all responses
-    std::complex<double> bin_sum{};
+    std::complex<double> sum{};
 
     // Calculate response for each sample
     const size_t k_times_bins = k * bins;
     for (unsigned int n = 0; n < bins; ++n)
-      bin_sum +=
-          twiddle[k_times_bins + n] * std::complex<double>(samples.at(n), 0);
-
-    // bin_sum = std::accumulate(std::cbegin(samples), std::cend(samples),
-    // std::complex<double>{},
-    //                       [&, n = 0u](auto sum, const auto &s) mutable {
-    //     return sum += twiddle[(k * bins) + n] * std::complex<double>(s, 0);
-
-    //       ++n;
-    //                       });
+      sum += twiddle[k_times_bins + n] * std::complex<double>(samples.at(n), 0);
 
     // Store the absolute value of the complex sum
-    fourier.push_back(abs(bin_sum));
+    fourier.push_back(abs(sum));
   }
 
   return fourier;
@@ -156,7 +147,7 @@ int main() {
   const auto &sample_rate = get_meta(in).sample_rate;
 
   // Prepare container to read a batch of samples
-  std::vector<sample_t> samples(sample_rate / 16);
+  std::vector<sample_t> samples(sample_rate / 4);
   const size_t bytes_in_batch{samples.size() * sizeof(sample_t)};
 
   // Repeatedly read batches of samples and report stats until read fails
@@ -165,6 +156,5 @@ int main() {
     // Get Fourier transform for this batch and dump it
     const auto &fourier = get_fourier(samples);
     std::cout << dump_log_histogram(std::cbegin(fourier), std::cend(fourier));
-    // std::cout << dump_histogram(std::cbegin(fourier), std::cend(fourier));
   }
 }
