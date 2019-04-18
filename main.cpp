@@ -46,7 +46,7 @@ auto fourier_init(const size_t &bins) {
 
   // Declare container for twiddle matrix
   std::vector<std::complex<double>> twiddle;
-  twiddle.reserve(bins * bins / 2);
+  twiddle.reserve(bins * bins);
 
   // Populate twiddle matrix
   for (size_t k = 0; k < bins; ++k)
@@ -57,17 +57,15 @@ auto fourier_init(const size_t &bins) {
 }
 
 using sample_t = int16_t;
-std::vector<double> get_fourier(const std::vector<sample_t> &samples) {
+std::vector<double> get_fourier(const std::vector<sample_t> &samples,
+                                const size_t bins = 40) {
 
-  // Size of Fourier transform
-  const size_t bins = 40;
-
-  // Initialise results container
+  // Initialise results container and reserve enough space for the bins
   std::vector<double> fourier;
-  fourier.reserve(samples.size());
+  fourier.reserve(bins);
 
   // Initialise twiddle matrix on first call
-  static const auto twiddle = fourier_init(100);
+  static const auto twiddle = fourier_init(bins);
   std::cout << twiddle.size() << " twiddle entries\n";
 
   // Calculate Fourier response
@@ -102,11 +100,13 @@ int main() {
   // Repeatedly read batches of samples and report stats until read fails
   while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch)) {
 
-    const auto fourier = get_fourier(samples);
+    const auto fourier = get_fourier(samples, 160);
     std::cout << samples.size() << " samples " << fourier.size()
               << " Fourier size\n";
 
+    const double max_bin =
+        *std::max_element(std::cbegin(fourier), std::cend(fourier));
     for (const auto &bin : fourier)
-      std::cout << std::rint(bin) << '\n';
+      std::cout << std::string(std::rint(350.0 * bin / max_bin), '-') << '\n';
   }
 }
