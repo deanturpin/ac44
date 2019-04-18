@@ -27,7 +27,7 @@ struct ac44 {
   std::uint32_t data_size{};
 };
 
-const size_t fourier_bins = 320;
+const size_t fourier_bins = 5 * 1024;
 
 // Read WAV header from a stream and return sample rate
 ac44 get_meta(std::istream &in) {
@@ -95,11 +95,12 @@ std::string dump_histogram(const iterator_t &begin, const iterator_t &end) {
 
   // Calculate the max so we can scale the output
   const double max_bin   = std::log2(*std::max_element(begin, end));
-  const size_t max_width = 350;
+  const size_t max_width = 70;
 
   std::ostringstream out;
+  out << '\n';
   std::for_each(begin, end, [&](const auto &bin) {
-    out << std::string(1 + std::rint(max_width * std::log2(bin) / max_bin), '#')
+    out << std::string(1 + std::rint(max_width * std::log2(bin) / max_bin), '-')
         << '\n';
   });
 
@@ -110,11 +111,27 @@ std::string dump_histogram(const iterator_t &begin, const iterator_t &end) {
 std::string dump_log_histogram(const iterator_t &begin, const iterator_t &end) {
 
   // Construct log histogram
-  // std::vector<double> log_histogram;
-  // std::for_each(begin, end, );
+  std::vector<double> log_histogram;
+  log_histogram.reserve(std::distance(begin, end));
+
+  std::for_each(begin, end, [&, n = 0](const auto &s) mutable {
+    size_t index = std::rint(std::log2(n));
+
+    // If it's a new bin create it
+    if (index >= log_histogram.size())
+      log_histogram.push_back(0.0);
+
+    // Update
+    log_histogram.back() += s;
+
+    ++n;
+  });
+
+  // Free up any unused memory
+  log_histogram.shrink_to_fit();
 
   // Pass log histogram to basic histogram routine
-  return dump_histogram(begin, end);
+  return dump_histogram(std::cbegin(log_histogram), std::cend(log_histogram));
 }
 
 int main() {
