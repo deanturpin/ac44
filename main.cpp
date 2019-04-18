@@ -4,6 +4,7 @@
 #include <complex>
 #include <cstdint>
 #include <iostream>
+#include <numeric>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -76,14 +77,24 @@ std::vector<double> get_fourier(const std::vector<sample_t> &samples) {
   for (size_t k = 0; k < bins / 2; ++k) {
 
     // We want to calculate the sum of all responses
-    std::complex<double> sum{};
+    std::complex<double> bin_sum{};
 
     // Calculate response for each sample
+    const size_t k_times_bins = k * bins;
     for (unsigned int n = 0; n < bins; ++n)
-      sum += twiddle[(k * bins) + n] * std::complex<double>(samples.at(n), 0);
+      bin_sum +=
+          twiddle[k_times_bins + n] * std::complex<double>(samples.at(n), 0);
+
+    // bin_sum = std::accumulate(std::cbegin(samples), std::cend(samples),
+    // std::complex<double>{},
+    //                       [&, n = 0u](auto sum, const auto &s) mutable {
+    //     return sum += twiddle[(k * bins) + n] * std::complex<double>(s, 0);
+
+    //       ++n;
+    //                       });
 
     // Store the absolute value of the complex sum
-    fourier.push_back(abs(sum));
+    fourier.push_back(abs(bin_sum));
   }
 
   return fourier;
@@ -154,5 +165,6 @@ int main() {
     // Get Fourier transform for this batch and dump it
     const auto &fourier = get_fourier(samples);
     std::cout << dump_log_histogram(std::cbegin(fourier), std::cend(fourier));
+    // std::cout << dump_histogram(std::cbegin(fourier), std::cend(fourier));
   }
 }
