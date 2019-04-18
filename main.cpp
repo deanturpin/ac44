@@ -94,14 +94,14 @@ int main() {
   const auto &sample_rate = get_meta(in).sample_rate;
 
   // Prepare container to read a batch of samples
-  std::vector<sample_t> samples(sample_rate);
+  std::vector<sample_t> samples(sample_rate / 8);
   const size_t bytes_in_batch{samples.size() * sizeof(sample_t)};
 
   // Repeatedly read batches of samples and report stats until read fails
   while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch)) {
 
     // Get Fourier transform for this batch
-    const auto fourier = get_fourier(samples, 160);
+    const auto fourier = get_fourier(samples, 320);
 
     // Calculate the max so we can scale the output
     const double max_bin =
