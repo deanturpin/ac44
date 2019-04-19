@@ -87,6 +87,46 @@ std::string dump_log_histogram(const iterator_t &begin, const iterator_t &end) {
   return dump_histogram(std::cbegin(log_histogram), std::cend(log_histogram));
 }
 
+// Create text representation of log histogram from above
+std::string dump_aerial_histogram(const iterator_t &begin,
+                                  const iterator_t &end) {
+
+  // Construct scaled histogram
+  std::vector<double> scaled;
+  scaled.reserve(std::distance(begin, end));
+
+  std::for_each(begin, end, [&, n = 0](const auto &s) mutable {
+    size_t index = std::rint(174 * n / fourier_bins);
+
+    // If it's a new bin create it
+    if (index >= scaled.size())
+      scaled.push_back(0.0);
+
+    // Sum all the values that match a bin
+    scaled.back() += s;
+
+    ++n;
+  });
+
+  // Free up any unused memory
+  scaled.shrink_to_fit();
+
+  // Max length of a bar
+  const size_t max_length = 10;
+
+  // Calculate max bin so we can scale the output
+  const double max_bin{
+      *std::max_element(std::cbegin(scaled), std::cend(scaled))};
+
+  std::ostringstream out;
+  std::for_each(std::cbegin(scaled), std::cend(scaled), [&](const auto &bin) {
+    out << std::floor(max_length * bin / max_bin);
+  });
+  out << '\n';
+
+  return out.str();
+}
+
 int main() {
 
   // Define source of audio
@@ -104,6 +144,7 @@ int main() {
 
     // Get Fourier transform for this batch and dump it
     const auto &fourier = get_fourier(samples);
-    std::cout << dump_log_histogram(std::cbegin(fourier), std::cend(fourier));
+    std::cout << dump_aerial_histogram(std::cbegin(fourier),
+                                       std::cend(fourier));
   }
 }

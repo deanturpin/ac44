@@ -4,8 +4,6 @@
 #include <cmath>
 #include <complex>
 
-const size_t fourier_bins = 4 * 1024;
-
 // Initialse twiddle matrix
 auto fourier_init() {
 
