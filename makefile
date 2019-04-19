@@ -3,18 +3,22 @@ CXX = g++-8
 FLAGS = --std=c++2a --all-warnings --extra-warnings -Wno-address \
 	-Werror -Wshadow -Wfloat-equal -Weffc++ -Wdelete-non-virtual-dtor -O1
 
-tmp/%.o: %.cpp
-	$(CXX) $(FLAGS) -o $@ $<
+all: tmp tmp/ac44 tmp/example.wav noise
 
-all: tmp tmp/main.o tmp/example.wav noise
+tmp/%.o: %.cpp
+	$(CXX) $(FLAGS) -c -o $@ $<
+
+
+tmp/ac44: tmp/main.o tmp/fourier.o
+	$(CXX) $(FLAGS) -o $@ $^
 
 tmp:
 	mkdir $@
 
 params = -q -f S16_LE -c 1 -r 44100
 
-noise:
-	arecord $(params) | tmp/main.o
+noise: tmp/ac44
+	arecord $(params) | $<
 
 clean:
 	rm -rf tmp
