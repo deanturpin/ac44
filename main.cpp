@@ -46,8 +46,6 @@ auto fourier_init() {
 
   using namespace std::complex_literals;
 
-  const double pi{
-      3.1415926535897932384626433832795028841971693993751058209749445923078164062};
   const size_t bins{fourier_bins};
 
   // Declare container for twiddle matrix
@@ -57,13 +55,16 @@ auto fourier_init() {
   for (size_t k = 0; k < bins / 2; ++k)
     for (size_t n = 0; n < bins; ++n)
       twiddle[n + (k * bins)] =
-          exp(2i * pi * double(k) * double(n) / double(bins));
+          exp(2i * M_PI * double(k) * double(n) / double(bins));
 
   return twiddle;
 }
 
 using sample_t = int16_t;
 std::vector<double> get_fourier(const std::vector<sample_t> &samples) {
+
+  assert(samples.size() >= fourier_bins &&
+         "fourier bins greater than samples size");
 
   // Initialise twiddle matrix on first call
   static const auto &twiddle = fourier_init();
@@ -80,9 +81,8 @@ std::vector<double> get_fourier(const std::vector<sample_t> &samples) {
     std::complex<double> sum{};
 
     // Calculate response for each sample
-    const size_t k_times_bins = k * bins;
     for (unsigned int n = 0; n < bins; ++n)
-      sum += twiddle[k_times_bins + n] * std::complex<double>(samples.at(n), 0);
+      sum += twiddle[(k * bins) + n] * std::complex<double>(samples.at(n), 0);
 
     // Store the absolute value of the complex sum
     fourier.push_back(abs(sum));
@@ -96,15 +96,15 @@ using iterator_t = std::vector<double>::const_iterator;
 std::string dump_histogram(const iterator_t &begin, const iterator_t &end) {
 
   // Calculate max bin so we can scale the output
-  const double max_bin{*std::max_element(begin, end)};
+  const double max_bin{std::log2(*std::max_element(begin, end))};
 
   // Max width of a bar
-  const size_t max_width = 70;
+  const size_t max_width = 80;
 
   std::ostringstream out;
   out << '\n';
   std::for_each(begin, end, [&](const auto &bin) {
-    out << std::string(1 + std::rint(max_width * bin / max_bin), '_')
+    out << std::string(1 + std::rint(max_width * std::log2(bin) / max_bin), '_')
         << "\033[36m_\033[0m\n";
   });
 
@@ -119,7 +119,7 @@ std::string dump_log_histogram(const iterator_t &begin, const iterator_t &end) {
   log_histogram.reserve(std::distance(begin, end));
 
   std::for_each(begin, end, [&, n = 0](const auto &s) mutable {
-    size_t index = std::rint(std::log2(n));
+    size_t index = std::rint(std::log2(n * 1024 * 1024));
 
     // If it's a new bin create it
     if (index >= log_histogram.size())
@@ -147,7 +147,7 @@ int main() {
   const auto &sample_rate = get_meta(in).sample_rate;
 
   // Prepare container to read a batch of samples
-  std::vector<sample_t> samples(sample_rate / 4);
+  std::vector<sample_t> samples(sample_rate / 8);
   const size_t bytes_in_batch{samples.size() * sizeof(sample_t)};
 
   // Repeatedly read batches of samples and report stats until read fails

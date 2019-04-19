@@ -6,7 +6,7 @@ FLAGS = --std=c++2a --all-warnings --extra-warnings -Wno-address \
 tmp/%.o: %.cpp
 	$(CXX) $(FLAGS) -o $@ $<
 
-all: tmp tmp/main.o noise
+all: tmp tmp/main.o tmp/example.wav noise
 
 tmp:
 	mkdir $@
@@ -19,5 +19,5 @@ noise:
 clean:
 	rm -rf tmp
 
-generate:
-	arecord $(params) -d 5 > tmp/long.raw
+tmp/example.wav:
+	arecord $(params) -d 2 > $@
