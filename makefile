@@ -15,7 +15,7 @@ tmp/ac44: tmp/main.o tmp/fourier.o tmp/ascii.o
 tmp:
 	mkdir $@
 
-params = -q -f S16_LE -c 1 -r 44100
+params = -q -f S16_LE -c 2 -r 44100
 
 noise: tmp/ac44
 	arecord $(params) -d 1 | $<
