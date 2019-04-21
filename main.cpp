@@ -55,18 +55,18 @@ int main() {
   // Repeatedly read batches of samples and report stats until read fails
   while (true) {
 
-    // timestamp(__LINE__, __FILE__);
+    // _timestamp(__LINE__, __FILE__);
 
     if (!in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch))
       break;
 
-    // timestamp(__LINE__, __FILE__);
+    // _timestamp(__LINE__, __FILE__);
 
     // Get Fourier transform for this batch and dump it
     const auto &fourier = get_fourier(samples);
 
-    // timestamp(__LINE__, __FILE__);
-    std::cout << dump_aerial_histogram(std::cbegin(fourier),
-                                       std::cend(fourier));
+    // _timestamp(__LINE__, __FILE__);
+    // std::cout << dump_aerial_histogram(std::cbegin(fourier),
+    //                                    std::cend(fourier));
   }
 }
