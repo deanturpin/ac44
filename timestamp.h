@@ -2,20 +2,8 @@
 #define TIMESTAMP_H
 
 #include <chrono>
-#include <fstream>
-#include <iostream>
+#include <string>
 
-auto init() { return std::chrono::high_resolution_clock::now(); }
-
-void timestamp(const size_t line, const std::string file = "undef") {
-  static auto then = init();
-  auto &out        = std::cout;
-
-  const auto now = std::chrono::high_resolution_clock::now();
-
-  out << file << ':' << line << '\t' << (now - then).count() << '\n';
-
-  then = now;
-}
+void _timestamp(const size_t, const std::string = "undef");
 
 #endif

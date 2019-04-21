@@ -9,7 +9,7 @@ tmp/%.o: %.cpp
 	$(CXX) $(FLAGS) -c -o $@ $<
 
 
-tmp/ac44: tmp/main.o tmp/fourier.o tmp/ascii.o
+tmp/ac44: tmp/main.o tmp/fourier.o tmp/ascii.o tmp/timestamp.o
 	$(CXX) $(FLAGS) -o $@ $^
 
 tmp:
