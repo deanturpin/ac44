@@ -1,6 +1,5 @@
 #include "ascii.h"
 #include "fourier.h"
-#include "timestamp.h"
 #include <array>
 #include <cassert>
 #include <cstdint>
@@ -49,24 +48,16 @@ int main() {
   const auto &sample_rate = get_meta(in).sample_rate;
 
   // Prepare container to read a batch of samples
-  std::vector<sample_t> samples(sample_rate / 10);
-  const size_t bytes_in_batch{samples.size() * sizeof(sample_t)};
+  std::vector<int16_t> samples(sample_rate / 10);
+  const size_t bytes_in_batch{samples.size() * sizeof(int16_t)};
 
   // Repeatedly read batches of samples and report stats until read fails
-  while (true) {
-
-    // _timestamp(__LINE__, __FILE__);
-
-    if (!in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch))
-      break;
-
-    // _timestamp(__LINE__, __FILE__);
+  while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch)) {
 
     // Get Fourier transform for this batch and dump it
     const auto &fourier = get_fourier(samples);
 
-    // _timestamp(__LINE__, __FILE__);
-    // std::cout << dump_aerial_histogram(std::cbegin(fourier),
-    //                                    std::cend(fourier));
+    std::cout << dump_aerial_histogram(std::cbegin(fourier),
+                                       std::cend(fourier));
   }
 }
