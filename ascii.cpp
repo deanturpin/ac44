@@ -34,7 +34,7 @@ std::string dump_log_histogram(const iterator_t &begin, const iterator_t &end) {
 
     // If it's a new bin create it
     if (index >= log_histogram.size())
-      log_histogram.push_back(0.0);
+      log_histogram.emplace_back();
 
     // Sum all the values that match a bin
     log_histogram.back() += s;
@@ -58,11 +58,11 @@ std::string dump_aerial_histogram(const iterator_t &begin,
   scaled.reserve(std::distance(begin, end));
 
   std::for_each(begin, end, [&, n = 0](const auto &s) mutable {
-    size_t index = std::rint(85 * n / std::distance(begin, end));
+    size_t index = std::rint(85.0 * n / std::distance(begin, end));
 
     // If it's a new bin create it
     if (index >= scaled.size())
-      scaled.push_back(0.0);
+      scaled.emplace_back();
 
     // Sum all the values that match a bin
     scaled.back() += s;
