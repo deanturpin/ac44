@@ -1,20 +1,23 @@
 #include "fourier.h"
 #include <cassert>
-#include <cmath>
 #include <complex>
 
 // Initialse twiddle matrix
-auto fourier_init() {
+std::vector<std::complex<double>> fourier_init() {
 
   // Declare container for twiddle matrix
   std::vector<std::complex<double>> twiddle;
+
+  // Only need to calculate first half as the second is a mirror image
   twiddle.reserve(bins<size_t> * bins<size_t> / 2);
+
+  const double pi{3.1415926535897932385};
 
   // Populate twiddle matrix
   using namespace std::complex_literals;
   for (size_t k = 0; k < bins<size_t> / 2; ++k)
     for (size_t n = 0; n < bins<size_t>; ++n)
-      twiddle.push_back(std::exp(2i * M_PI * static_cast<double>(k) *
+      twiddle.push_back(std::exp(2i * pi * static_cast<double>(k) *
                                  static_cast<double>(n) / bins<double>));
 
   return twiddle;
