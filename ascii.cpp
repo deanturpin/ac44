@@ -7,15 +7,15 @@
 std::string dump_histogram(const iterator_t &begin, const iterator_t &end) {
 
   // Calculate max bin so we can scale the output
-  const double max_bin{std::log2(*std::max_element(begin, end))};
+  const double max_bin{*std::max_element(begin, end)};
 
   // Max width of a bar
-  const size_t max_width = 80;
+  const size_t max_width = 370;
 
   std::ostringstream out;
   out << '\n';
   std::for_each(begin, end, [&](const auto &bin) {
-    out << std::string(1 + std::rint(max_width * std::log2(bin) / max_bin), '_')
+    out << std::string(1 + std::rint(max_width * bin / max_bin), '#')
         << "\033[36m_\033[0m\n";
   });
 
@@ -74,7 +74,7 @@ std::string dump_aerial_histogram(const iterator_t &begin,
   scaled.shrink_to_fit();
 
   // Max length of a bar
-  const std::string chars{" _.oO"};
+  const std::string chars{" _.oO#"};
   const size_t max_length = chars.size() - 1;
 
   // Calculate max bin so we can scale the output

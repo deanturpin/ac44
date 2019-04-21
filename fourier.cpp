@@ -1,4 +1,5 @@
 #include "fourier.h"
+#include "timestamp.h"
 #include <array>
 #include <cassert>
 #include <cmath>
@@ -6,6 +7,8 @@
 
 // Initialse twiddle matrix
 auto fourier_init() {
+
+  timestamp(__LINE__, __FILE__);
 
   using namespace std::complex_literals;
 
@@ -20,6 +23,8 @@ auto fourier_init() {
       twiddle[n + (k * bins)] =
           exp(2i * M_PI * double(k) * double(n) / double(bins));
 
+  timestamp(__LINE__, __FILE__);
+
   return twiddle;
 }
 
@@ -28,6 +33,7 @@ std::vector<double> get_fourier(const std::vector<sample_t> &samples) {
   assert(samples.size() >= fourier_bins &&
          "fourier bins greater than samples size");
 
+  timestamp(__LINE__, __FILE__);
   // Initialise twiddle matrix on first call
   static const auto &twiddle = fourier_init();
 
@@ -49,6 +55,8 @@ std::vector<double> get_fourier(const std::vector<sample_t> &samples) {
     // Store the absolute value of the complex sum
     fourier.push_back(abs(sum));
   }
+
+  timestamp(__LINE__, __FILE__);
 
   return fourier;
 }

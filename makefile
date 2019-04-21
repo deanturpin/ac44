@@ -18,7 +18,7 @@ tmp:
 params = -q -f S16_LE -c 1 -r 44100
 
 noise: tmp/ac44
-	arecord $(params) | $<
+	arecord $(params) -d 1 | $<
 
 clean:
 	rm -rf tmp
