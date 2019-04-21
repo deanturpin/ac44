@@ -56,7 +56,7 @@ cont_t scale_histogram(const iterator_t &begin, const iterator_t &end,
 // Create text representation of histogram with a log X axis
 std::string dump_log_histogram(const iterator_t &begin, const iterator_t &end) {
 
-  const auto scaled = scale_histogram(begin, end, [](const auto &n) {
+  const auto &scaled = scale_histogram(begin, end, [](const auto &n) {
     return std::rint(std::log2(n * 1024 * 1024));
   });
 
@@ -69,7 +69,7 @@ std::string dump_aerial_histogram(const iterator_t &begin,
                                   const iterator_t &end) {
 
   // Construct scaled histogram
-  const auto scaled = scale_histogram(begin, end, [&](const auto &n) {
+  const auto &scaled = scale_histogram(begin, end, [&](const auto &n) {
     return std::rint(85.0 * n / std::distance(begin, end));
   });
 
