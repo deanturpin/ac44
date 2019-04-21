@@ -34,7 +34,7 @@ std::vector<double> get_fourier(const std::vector<int16_t> &samples) {
 
   // Initialise results container and reserve enough space for the bins
   std::vector<double> fourier;
-  fourier.reserve(bins<size_t>);
+  fourier.reserve(bins<size_t> / 2);
 
   // Calculate Fourier response
   for (size_t k = 0; k < bins<size_t> / 2; ++k) {
@@ -48,7 +48,7 @@ std::vector<double> get_fourier(const std::vector<int16_t> &samples) {
              std::complex<double>(samples.at(n), 0);
 
     // Store the absolute value of the complex sum
-    fourier.push_back(std::abs(sum));
+    fourier.emplace_back(std::abs(sum));
   }
 
   return fourier;
