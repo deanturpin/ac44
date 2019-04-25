@@ -11,12 +11,12 @@ std::string dump_histogram(const iterator_t &begin, const iterator_t &end) {
   const double max_bin{*std::max_element(begin, end)};
 
   // Max width of a bar
-  const size_t max_width = 370;
+  const size_t max_bar_length = 70;
 
   std::ostringstream out;
   out << '\n';
   std::for_each(begin, end, [&](const auto &bin) {
-    out << std::string(1 + std::rint(max_width * bin / max_bin), '#')
+    out << std::string(1 + std::rint(max_bar_length * bin / max_bin), '_')
         << "\033[36m_\033[0m\n";
   });
 
