@@ -57,6 +57,6 @@ int main() {
     // Get Fourier transform for this batch and dump it
     const auto &fourier = get_fourier(samples);
 
-    std::cout << dump_histogram(std::crbegin(fourier), std::crend(fourier));
+    std::cout << dump_histogram(std::cbegin(fourier), std::cend(fourier));
   }
 }

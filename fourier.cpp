@@ -1,6 +1,8 @@
 #include "fourier.h"
+#include <algorithm>
 #include <cassert>
 #include <complex>
+#include <iterator>
 
 // Initialse twiddle matrix
 std::vector<std::complex<double>> fourier_init() {
@@ -50,6 +52,8 @@ std::vector<double> get_fourier(const std::vector<int16_t> &samples) {
     // Store the absolute value of the complex sum
     fourier.emplace_back(std::abs(sum));
   }
+
+  std::reverse(std::begin(fourier), std::end(fourier));
 
   return fourier;
 }
