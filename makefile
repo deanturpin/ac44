@@ -3,7 +3,7 @@ CXX = g++-8
 FLAGS = --std=c++2a --all-warnings --extra-warnings -Wno-address \
 	-Werror -Wshadow -Wfloat-equal -Weffc++ -Wdelete-non-virtual-dtor -O1
 
-all: tmp tmp/ac44 tmp/example.wav noise
+all: tmp tmp/ac44 tmp/example.wav
 
 tmp/%.o: %.cpp
 	$(CXX) $(FLAGS) -c -o $@ $<
@@ -18,7 +18,7 @@ tmp:
 params = -q -f S16_LE -c 2 -r 44100
 
 noise: tmp/ac44
-	arecord $(params) | $<
+	arecord $(params) -d 2 | $< | agraph
 
 clean:
 	rm -rf tmp

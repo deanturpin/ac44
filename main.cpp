@@ -1,9 +1,9 @@
-#include "ascii.h"
 #include "fourier.h"
 #include <array>
 #include <cassert>
 #include <cstdint>
 #include <iostream>
+#include <iterator>
 #include <numeric>
 #include <sstream>
 #include <string>
@@ -57,6 +57,9 @@ int main() {
     // Get Fourier transform for this batch and dump it
     const auto &fourier = get_fourier(samples);
 
-    std::cout << dump_histogram(std::cbegin(fourier), std::cend(fourier));
+    std::copy(std::cbegin(fourier), std::cend(fourier),
+              std::ostream_iterator<double>(std::cout, "\n"));
+
+    std::cout << "\n";
   }
 }
