@@ -74,7 +74,7 @@ std::string dump_aerial_histogram(const iterator_t &begin,
   });
 
   // Max length of a bar
-  const std::string chars{" _.oO#"};
+  const std::string chars{" _.,oO"};
   const size_t max_length = chars.size() - 1;
 
   // Calculate max bin so we can scale the output
