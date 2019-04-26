@@ -53,7 +53,5 @@ std::vector<double> get_fourier(const std::vector<int16_t> &samples) {
     fourier.emplace_back(std::abs(sum));
   }
 
-  std::reverse(std::begin(fourier), std::end(fourier));
-
   return fourier;
 }
