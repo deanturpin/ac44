@@ -18,10 +18,10 @@ tmp:
 params = -q -f S16_LE -c 2 -r 44100
 
 noise: tmp/ac44
-	arecord $(params) -d 2 | $< | agraph
+	arecord $(params) -d 2 | $< | aski
 
 clean:
 	rm -rf tmp
 
-tmp/example.wav:
+tmp/example.wav: tmp
 	arecord $(params) -d 2 > $@
