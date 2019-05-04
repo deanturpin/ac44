@@ -1,4 +1,5 @@
 #include "fourier.h"
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <cstdint>
@@ -48,7 +49,7 @@ int main() {
   const auto &sample_rate = get_meta(in).sample_rate;
 
   // Prepare container to read a batch of samples
-  std::vector<int16_t> samples(sample_rate / 10);
+  std::vector<int16_t> samples(sample_rate);
   const size_t bytes_in_batch{samples.size() * sizeof(int16_t)};
 
   // Repeatedly read batches of samples and report stats until read fails
@@ -57,9 +58,13 @@ int main() {
     // Get Fourier transform for this batch and dump it
     const auto &fourier = get_fourier(samples);
 
-    std::copy(std::cbegin(fourier), std::cend(fourier),
-              std::ostream_iterator<double>(std::cout, "\n"));
+    const size_t bin = std::distance(
+        fourier.cbegin(), std::max_element(fourier.cbegin(), fourier.cend()));
 
-    std::cout << "\n";
+    const auto frequency = bin * samples.size() / fourier.size();
+
+    // Report the peak bin
+    if (frequency > 0)
+      std::cout << frequency << '\n';
   }
 }
