@@ -3,6 +3,7 @@
 #include <array>
 #include <cassert>
 #include <cstdint>
+#include <deque>
 #include <iostream>
 #include <iterator>
 #include <numeric>
@@ -55,16 +56,36 @@ int main() {
   // Repeatedly read batches of samples and report stats until read fails
   while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch)) {
 
+    static std::deque<double> harmonics;
+
     // Get Fourier transform for this batch and dump it
     const auto &fourier = get_fourier(samples);
 
     const size_t bin = std::distance(
         fourier.cbegin(), std::max_element(fourier.cbegin(), fourier.cend()));
 
+    // Store current bin
     const auto frequency = bin * samples.size() / fourier.size();
 
-    // Report the peak bin
     if (frequency > 0)
-      std::cout << frequency << '\n';
+      harmonics.push_back(frequency);
+
+    // Dump the oldest
+    // if (harmonics.size() > 3)
+    //   harmonics.pop_front();
+
+    // Drop the duplicates
+    auto last = std::unique(harmonics.begin(), harmonics.end());
+    harmonics.erase(last, harmonics.end());
+
+    // Report bins
+    std::copy(harmonics.cbegin(), harmonics.cend(),
+              std::ostream_iterator<double>(std::cout, "\t"));
+
+    if (!harmonics.empty())
+      std::cout << '\n';
+
+    if (harmonics.size() > 2)
+      harmonics.clear();
   }
 }
