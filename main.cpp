@@ -48,10 +48,11 @@ int main() {
 
   // Get the meta data
   const auto &sample_rate = get_meta(in).sample_rate;
+  const size_t scale      = 2;
 
   // Prepare container to read a batch of samples
   std::vector<int16_t> samples(sample_rate);
-  const size_t bytes_in_batch{samples.size() * sizeof(int16_t)};
+  const size_t bytes_in_batch{samples.size() * sizeof(int16_t) / scale};
 
   // Repeatedly read batches of samples and report stats until read fails
   while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch)) {
@@ -65,7 +66,7 @@ int main() {
         fourier.cbegin(), std::max_element(fourier.cbegin(), fourier.cend()));
 
     // Store current bin
-    const auto frequency = bin * samples.size() / fourier.size();
+    const auto frequency = scale * bin * samples.size() / fourier.size();
 
     if (frequency > 0)
       harmonics.push_back(frequency);
@@ -85,7 +86,7 @@ int main() {
     if (!harmonics.empty())
       std::cout << '\n';
 
-    if (harmonics.size() > 2)
+    if (harmonics.size() > 1)
       harmonics.clear();
   }
 }
