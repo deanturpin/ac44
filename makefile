@@ -13,7 +13,7 @@ tmp/ac44: tmp/main.o tmp/fourier.o tmp/ascii.o tmp/timestamp.o
 	$(CXX) $(FLAGS) -o $@ $^
 
 tmp:
-	mkdir $@
+	mkdir -p $@
 
 params = -q -f S16_LE -c 2 -r 44100
 
