@@ -48,47 +48,62 @@ int main() {
 
   // Get the meta data
   const auto &sample_rate = get_meta(in).sample_rate;
-  const size_t scale      = 1;
+  // const size_t scale      = 1;
 
-  // Prepare container to read a batch of samples
+  // Prepare container to hold a period of samples
   std::vector<int16_t> samples(sample_rate);
-  const size_t bytes_in_batch{samples.size() * sizeof(int16_t) / scale};
+  // const size_t bytes_in_batch{samples.size() * sizeof(int16_t) / scale};
 
   // Repeatedly read batches of samples and report stats until read fails
-  while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch)) {
+  // while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch)) {
+  std::cout << "start read loop\n";
+  while (in.good()) {
 
-    static std::deque<double> harmonics;
+    // Request the samples in small blocks
+    const size_t blocks = 15;
+    const size_t block_size = samples.size() / blocks;
 
-    // Get Fourier transform for this batch and dump it
-    const auto &fourier = get_fourier(samples);
+    for (size_t i = 0; i < blocks; ++i) {
+      in.read(reinterpret_cast<char *>(&samples[i * block_size]),
+              block_size * sizeof(int16_t));
 
-    const size_t bin = std::distance(
-        fourier.cbegin(), std::max_element(fourier.cbegin(), fourier.cend()));
+      std::cout << i << " block\n";
+    }
 
-    // Store current bin
-    const auto frequency = scale * bin * samples.size() / fourier.size();
+    std::cout << "done\n";
 
-    if (frequency > 0)
-      harmonics.push_back(frequency);
+    // static std::deque<double> harmonics;
 
-    // Drop the duplicates
-    auto last = std::unique(harmonics.begin(), harmonics.end());
-    harmonics.erase(last, harmonics.end());
+    // // Get Fourier transform for this batch and dump it
+    // const auto &fourier = get_fourier(samples);
 
-    // Dump the oldest
-    if (harmonics.size() > 1)
-      harmonics.pop_front();
+    // const size_t bin = std::distance(
+    //     fourier.cbegin(), std::max_element(fourier.cbegin(), fourier.cend()));
 
-    // Report bins
-    std::stringstream out;
-    std::copy(harmonics.cbegin(), harmonics.cend(),
-              std::ostream_iterator<double>(out, "\t"));
+    // // Store current bin
+    // const auto frequency = scale * bin * samples.size() / fourier.size();
 
-    if (!harmonics.empty())
-      out << '\n';
+    // if (frequency > 0)
+    //   harmonics.push_back(frequency);
 
-    // Dump to stdout and std err
-    std::cout << out.str();
-    std::cerr << out.str();
+    // // Drop the duplicates
+    // auto last = std::unique(harmonics.begin(), harmonics.end());
+    // harmonics.erase(last, harmonics.end());
+
+    // // Dump the oldest
+    // if (harmonics.size() > 1)
+    //   harmonics.pop_front();
+
+    // // Report bins
+    // std::stringstream out;
+    // std::copy(harmonics.cbegin(), harmonics.cend(),
+    //           std::ostream_iterator<double>(out, "\t"));
+
+    // if (!harmonics.empty())
+    //   out << '\n';
+
+    // // Dump to stdout and std err
+    // std::cout << out.str();
+    // std::cerr << out.str();
   }
 }
