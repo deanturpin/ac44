@@ -48,7 +48,7 @@ int main() {
 
   // Get the meta data
   const auto &sample_rate = get_meta(in).sample_rate;
-  const size_t scale      = 2;
+  const size_t scale      = 1;
 
   // Prepare container to read a batch of samples
   std::vector<int16_t> samples(sample_rate);
@@ -71,22 +71,24 @@ int main() {
     if (frequency > 0)
       harmonics.push_back(frequency);
 
-    // Dump the oldest
-    // if (harmonics.size() > 3)
-    //   harmonics.pop_front();
-
     // Drop the duplicates
     auto last = std::unique(harmonics.begin(), harmonics.end());
     harmonics.erase(last, harmonics.end());
 
+    // Dump the oldest
+    if (harmonics.size() > 1)
+      harmonics.pop_front();
+
     // Report bins
+    std::stringstream out;
     std::copy(harmonics.cbegin(), harmonics.cend(),
-              std::ostream_iterator<double>(std::cout, "\t"));
+              std::ostream_iterator<double>(out, "\t"));
 
     if (!harmonics.empty())
-      std::cout << '\n';
+      out << '\n';
 
-    if (harmonics.size() > 1)
-      harmonics.clear();
+    // Dump to stdout and std err
+    std::cout << out.str();
+    std::cerr << out.str();
   }
 }

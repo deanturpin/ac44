@@ -27,3 +27,7 @@ apt install libasound2-dev -y
 
 Link with -lasound
 
+```bash
+arecord -q -f S16_LE -c 2 -r 44100 | tmp/ac44 | while read line; do tony $line | aplay --quiet; done
+```
+
