@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <deque>
 #include <iostream>
+#include <future>
 #include <iterator>
 #include <numeric>
 #include <sstream>
@@ -57,20 +58,37 @@ int main() {
   // Repeatedly read batches of samples and report stats until read fails
   // while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch)) {
   std::cout << "start read loop\n";
-  while (in.good()) {
+  // while (!in.eof()) {
+  {
 
     // Request the samples in small blocks
     const size_t blocks = 15;
-    const size_t block_size = samples.size() / blocks;
+    const size_t samples_in_block = samples.size() / blocks;
+
+    std::vector<int16_t> _samples(samples_in_block);
+
+    std::future<std::vector<int16_t>> fourier;
 
     for (size_t i = 0; i < blocks; ++i) {
-      in.read(reinterpret_cast<char *>(&samples[i * block_size]),
-              block_size * sizeof(int16_t));
 
-      std::cout << i << " block\n";
+      in.read(
+        reinterpret_cast<char *>(_samples.data()),
+      _samples.size() * sizeof(int16_t)
+      );
+
+      std::copy(_samples.cbegin(), _samples.cend(),
+                std::next(samples.begin(), samples_in_block));
+
+      std::cout << _samples.size() << " samples in block\n";
+      
+      // const auto fourier = std::async(std::launch::async, get_fourier, _samples);
     }
 
+    // const auto peak = *std::max_element(f.cbegin(), f.cend());
+
+    // std::cout << f << '\n';
     std::cout << "done\n";
+
 
     // static std::deque<double> harmonics;
 

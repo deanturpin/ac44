@@ -10,7 +10,7 @@ tmp/%.o: %.cpp
 
 
 tmp/ac44: tmp/main.o tmp/fourier.o tmp/ascii.o tmp/timestamp.o
-	$(CXX) $(FLAGS) -o $@ $^
+	$(CXX) $(FLAGS) -o $@ $^ -lpthread
 
 tmp:
 	mkdir -p $@
