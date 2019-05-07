@@ -1,3 +1,10 @@
+- Main thread: read live audio in fractions of a second
+- Root note thread: run FFT on short samples to catch changes
+- Sentiment thread: run longer FFT, calculate chords
+- Playback thread: construct melodies based on root and sentiment
+- Tempo calculator: very long sample to calculate tempo
+
+---
 
 The WAV header contains some recognisable text info.
 ```bash
