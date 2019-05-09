@@ -52,41 +52,46 @@ int main() {
   // const size_t scale      = 1;
 
   // Prepare container to hold a period of samples
-  std::vector<int16_t> samples(sample_rate);
   // const size_t bytes_in_batch{samples.size() * sizeof(int16_t) / scale};
 
   // Repeatedly read batches of samples and report stats until read fails
   // while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch)) {
   std::cout << "start read loop\n";
 
-  const size_t blocks = 15;
-  const size_t samples_in_block = samples.size() / blocks;
-  std::vector<int16_t> _samples(samples_in_block);
+  // const size_t blocks = 1;
+  // const size_t samples_in_block = samples.size() / blocks;
+  // std::vector<int16_t> _samples(samples_in_block);
+
+  const auto get_samples = [&]{
+
+    std::vector<int16_t> s(sample_rate / 10);
+    in.read(reinterpret_cast<char *>(s.data()),
+    s.size() * sizeof(int16_t));
+
+    return s;
+  };
 
   // Read some data to get started
-  in.read(reinterpret_cast<char *>(_samples.data()),
-  _samples.size() * sizeof(int16_t));
+  auto samples = get_samples();
 
   // Initiate analysis before starting another capture
-  auto fourier = std::async(std::launch::async, get_fourier, _samples);
+  auto fourier = std::async(std::launch::async, get_fourier, samples);
 
-  for (size_t i = 0; i < blocks; ++i) {
+  for (size_t i = 0; i < 20; ++i) {
   // while (true) {
 
     // Read next batch
-    in.read(reinterpret_cast<char *>(_samples.data()),
-            _samples.size() * sizeof(int16_t));
+    samples = get_samples();
 
     // Fetch results from previous batch
     const auto f = fourier.get();
 
     // Dump max
-    const auto max = *max_element(f.cbegin(), f.cend());
-
+    const auto max = std::distance(f.cbegin(), max_element(f.cbegin(), f.cend()));
     std::cout << max << "\n";
 
     // Initiate next analysis
-    fourier = std::async(std::launch::async, get_fourier, _samples);
+    fourier = std::async(std::launch::async, get_fourier, samples);
   }
 
   // while (!in.eof()) {
