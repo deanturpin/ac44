@@ -58,36 +58,68 @@ int main() {
   // Repeatedly read batches of samples and report stats until read fails
   // while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch)) {
   std::cout << "start read loop\n";
+
+  const size_t blocks = 15;
+  const size_t samples_in_block = samples.size() / blocks;
+  std::vector<int16_t> _samples(samples_in_block);
+
+  // Read some data to get started
+  in.read(reinterpret_cast<char *>(_samples.data()),
+  _samples.size() * sizeof(int16_t));
+
+  // Initiate analysis before starting another capture
+  auto fourier = std::async(std::launch::async, get_fourier, _samples);
+
+  for (size_t i = 0; i < blocks; ++i) {
+  // while (true) {
+
+    // Read next batch
+    in.read(reinterpret_cast<char *>(_samples.data()),
+            _samples.size() * sizeof(int16_t));
+
+    // Fetch results from previous batch
+    const auto f = fourier.get();
+
+    // Dump max
+    const auto max = *max_element(f.cbegin(), f.cend());
+
+    std::cout << max << "\n";
+
+    // Initiate next analysis
+    fourier = std::async(std::launch::async, get_fourier, _samples);
+  }
+
   // while (!in.eof()) {
   {
 
     // Request the samples in small blocks
-    const size_t blocks = 15;
-    const size_t samples_in_block = samples.size() / blocks;
+    // const size_t blocks = 15;
+    // const size_t samples_in_block = samples.size() / blocks;
 
-    std::vector<int16_t> _samples(samples_in_block);
+    // std::vector<int16_t> _samples(samples_in_block);
 
-    std::future<std::vector<int16_t>> fourier;
+    // std::future<std::vector<int16_t>> fourier;
 
-    for (size_t i = 0; i < blocks; ++i) {
+    // for (size_t i = 0; i < blocks; ++i) {
 
-      in.read(
-        reinterpret_cast<char *>(_samples.data()),
-      _samples.size() * sizeof(int16_t)
-      );
+    //   in.read(
+    //     reinterpret_cast<char *>(_samples.data()),
+    //   _samples.size() * sizeof(int16_t)
+    //   );
 
-      std::copy(_samples.cbegin(), _samples.cend(),
-                std::next(samples.begin(), samples_in_block));
+    //   std::copy(_samples.cbegin(), _samples.cend(),
+    //             std::next(samples.begin(), samples_in_block));
 
-      std::cout << _samples.size() << " samples in block\n";
-      
-      // const auto fourier = std::async(std::launch::async, get_fourier, _samples);
-    }
+    //   std::cout << _samples.size() << " samples in block\n";
+    //   
+    //   auto fourier = std::async(std::launch::async, get_fourier, _samples);
+    //   const auto f = fourier.get();
+    // }
 
-    // const auto peak = *std::max_element(f.cbegin(), f.cend());
+    // // const auto peak = *std::max_element(f.cbegin(), f.cend());
 
-    // std::cout << f << '\n';
-    std::cout << "done\n";
+    // // std::cout << f << '\n';
+    // std::cout << "done\n";
 
 
     // static std::deque<double> harmonics;
