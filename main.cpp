@@ -49,116 +49,31 @@ int main() {
 
   // Get the meta data
   const auto &sample_rate = get_meta(in).sample_rate;
-  // const size_t scale      = 1;
 
-  // Prepare container to hold a period of samples
-  // const size_t bytes_in_batch{samples.size() * sizeof(int16_t) / scale};
+    // Create placeholder for future
+    std::future<std::vector<double>> fourier;
 
-  // Repeatedly read batches of samples and report stats until read fails
-  // while (in.read(reinterpret_cast<char *>(samples.data()), bytes_in_batch)) {
-  std::cout << "start read loop\n";
+  for (size_t i = 0; i < 40; ++i) {
 
-  // const size_t blocks = 1;
-  // const size_t samples_in_block = samples.size() / blocks;
-  // std::vector<int16_t> _samples(samples_in_block);
+    // Read batch of pulses
+    std::vector<int16_t> samples(sample_rate / 2);
+    std::cin.read(reinterpret_cast<char *>(samples.data()), samples.size() * sizeof(int16_t));
+    // Fetch results from previous batch (if it exists)
+    if (fourier.valid()) {
 
-  const auto get_samples = [&]{
+      // The future is bright
+      const auto f = fourier.get();
 
-    std::vector<int16_t> s(sample_rate / 10);
-    in.read(reinterpret_cast<char *>(s.data()),
-    s.size() * sizeof(int16_t));
-
-    return s;
-  };
-
-  // Read some data to get started
-  auto samples = get_samples();
-
-  // Initiate analysis before starting another capture
-  auto fourier = std::async(std::launch::async, get_fourier, samples);
-
-  for (size_t i = 0; i < 20; ++i) {
-  // while (true) {
-
-    // Read next batch
-    samples = get_samples();
-
-    // Fetch results from previous batch
-    const auto f = fourier.get();
-
-    // Dump max
-    const auto max = std::distance(f.cbegin(), max_element(f.cbegin(), f.cend()));
-    std::cout << max << "\n";
-
+      // Dump max bin frequency
+      const auto max = std::distance(f.cbegin(), std::max_element(f.cbegin(), f.cend()));
+      const auto bins = f.size();
+      std::cout << sample_rate * max / bins << "\n";
+    }
+    
     // Initiate next analysis
     fourier = std::async(std::launch::async, get_fourier, samples);
   }
 
-  // while (!in.eof()) {
-  {
-
-    // Request the samples in small blocks
-    // const size_t blocks = 15;
-    // const size_t samples_in_block = samples.size() / blocks;
-
-    // std::vector<int16_t> _samples(samples_in_block);
-
-    // std::future<std::vector<int16_t>> fourier;
-
-    // for (size_t i = 0; i < blocks; ++i) {
-
-    //   in.read(
-    //     reinterpret_cast<char *>(_samples.data()),
-    //   _samples.size() * sizeof(int16_t)
-    //   );
-
-    //   std::copy(_samples.cbegin(), _samples.cend(),
-    //             std::next(samples.begin(), samples_in_block));
-
-    //   std::cout << _samples.size() << " samples in block\n";
-    //   
-    //   auto fourier = std::async(std::launch::async, get_fourier, _samples);
-    //   const auto f = fourier.get();
-    // }
-
-    // // const auto peak = *std::max_element(f.cbegin(), f.cend());
-
-    // // std::cout << f << '\n';
-    // std::cout << "done\n";
-
-
-    // static std::deque<double> harmonics;
-
-    // // Get Fourier transform for this batch and dump it
-    // const auto &fourier = get_fourier(samples);
-
-    // const size_t bin = std::distance(
-    //     fourier.cbegin(), std::max_element(fourier.cbegin(), fourier.cend()));
-
-    // // Store current bin
-    // const auto frequency = scale * bin * samples.size() / fourier.size();
-
-    // if (frequency > 0)
-    //   harmonics.push_back(frequency);
-
-    // // Drop the duplicates
-    // auto last = std::unique(harmonics.begin(), harmonics.end());
-    // harmonics.erase(last, harmonics.end());
-
-    // // Dump the oldest
-    // if (harmonics.size() > 1)
-    //   harmonics.pop_front();
-
-    // // Report bins
-    // std::stringstream out;
-    // std::copy(harmonics.cbegin(), harmonics.cend(),
-    //           std::ostream_iterator<double>(out, "\t"));
-
-    // if (!harmonics.empty())
-    //   out << '\n';
-
-    // // Dump to stdout and std err
-    // std::cout << out.str();
-    // std::cerr << out.str();
-  }
+  // Promises promises...
+  fourier.get();
 }
