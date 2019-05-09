@@ -56,8 +56,10 @@ int main() {
   for (size_t i = 0; i < 40; ++i) {
 
     // Read batch of pulses
-    std::vector<int16_t> samples(sample_rate / 2);
-    std::cin.read(reinterpret_cast<char *>(samples.data()), samples.size() * sizeof(int16_t));
+    std::vector<int16_t> samples(sample_rate / 20);
+    std::cin.read(reinterpret_cast<char *>(samples.data()), samples.size() *
+                  sizeof(int16_t));
+
     // Fetch results from previous batch (if it exists)
     if (fourier.valid()) {
 
