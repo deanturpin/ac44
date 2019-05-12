@@ -3,15 +3,15 @@
 #include <array>
 #include <cassert>
 #include <cstdint>
-#include <mutex>
-#include <thread>
 #include <deque>
-#include <iostream>
 #include <future>
+#include <iostream>
 #include <iterator>
+#include <mutex>
 #include <numeric>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <vector>
 
 // Structure of a WAV
@@ -44,7 +44,6 @@ ac44 get_meta(std::istream &in) {
   return meta;
 }
 
-
 int main() {
 
   // Define source of audio
@@ -54,80 +53,60 @@ int main() {
   const auto &sample_rate = get_meta(in).sample_rate;
 
   // Create a large block of samples
-  const size_t duration{1};
+  const size_t duration{10};
   std::vector<int16_t> samples(sample_rate * duration);
 
   // Split into blocks
   const size_t blocks_per_second{10};
   const size_t block_size{sample_rate / blocks_per_second};
 
-  // std::cout << blocks_per_second << " blocks per seconds\n";
-  // std::cout << block_size << " block size\n";
-  // std::cout << duration << " seconds\n";
-
   std::atomic<std::int16_t> latest;
-
   std::mutex m;
   std::atomic<bool> shutdown;
 
+  // DFT analysis thread
   const auto dft = [&]() {
-
     while (!shutdown.load()) {
-    m.lock();
-    std::cout << latest.load() << " released\n";
+
+      // Wait until some samples are available
+      m.lock();
+
+      // Prepare to copy the latest block
+      const auto i = latest.load();
+      const size_t start = i * block_size;
+      const size_t end = (i + 1) * block_size;
+      const std::vector<int16_t> s(&samples[start], &samples[end]);
+
+      // Do Fourier analysis
+      const auto f = get_fourier(s);
+
+      // Calculate frequency of max bin
+      const auto peak_bin =
+          std::distance(f.cbegin(), std::max_element(f.cbegin(), f.cend()));
+
+      // Size of Fourier response
+      const auto bins = f.size();
+
+      std::cout << sample_rate * peak_bin / bins << "\n";
     }
   };
 
+  // Get ready to release thread
   shutdown.store(false);
   m.lock();
   std::thread t1(dft);
 
   for (size_t i = 0; i < samples.size() / block_size; ++i) {
-    std::cin.read(reinterpret_cast<char *>(&samples[i * block_size]), block_size *
-    sizeof(int16_t));
+    std::cin.read(reinterpret_cast<char *>(&samples[i * block_size]),
+                  block_size * sizeof(int16_t));
 
     latest.store(i);
 
-    if (!(i %3))
+    if (!(i % 3))
       m.unlock();
   }
 
-  std::cout << "prepare to shutdown\n";
+  // Wait for thread to return
   shutdown.store(true);
-
-  std::cout << "join thread\n";
   t1.join();
-
-  std::cout << "c'est fini\n";
-  
-    // Create placeholder for future
-  //   std::future<std::vector<double>> fourier;
-
-  // for (size_t i = 0; i < 80; ++i) {
-
-  //   // Read batch of pulses
-  //   std::vector<int16_t> samples(sample_rate / 20);
-  //   std::cin.read(reinterpret_cast<char *>(samples.data()), samples.size() *
-  //                 sizeof(int16_t));
-
-  //   // Fetch results from previous batch (if it exists)
-  //   if (fourier.valid()) {
-
-  //     // The future is bright
-  //     const auto f = fourier.get();
-
-  //     // Dump max bin frequency
-  //     const auto max = std::distance(f.cbegin(), std::max_element(f.cbegin(), f.cend()));
-  //     const auto bins = f.size();
-  //     std::cout << sample_rate * max / bins << "\n";
-  //   }
-  //   
-  //   // Initiate next analysis
-  //   fourier = std::async(std::launch::async, get_fourier, samples);
-  // }
-
-  // TODO - move to semaphore based
-
-  // Promises promises...
-  // fourier.get();
 }
