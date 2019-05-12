@@ -86,7 +86,9 @@ int main() {
       // Size of Fourier response
       const auto bins = f.size();
 
-      std::cout << sample_rate * peak_bin / bins << " quick\n";
+      const double freq = 1.0 * sample_rate * peak_bin / bins;
+      if (freq > 0)
+        std::cout << freq << "\n";
     }
   };
 
@@ -106,13 +108,13 @@ int main() {
       const auto f = get_fourier(s);
 
       // Calculate frequency of max bin
-      const auto peak_bin =
-          std::distance(f.cbegin(), std::max_element(f.cbegin(), f.cend()));
+      // const auto peak_bin =
+      //     std::distance(f.cbegin(), std::max_element(f.cbegin(), f.cend()));
 
-      // Size of Fourier response
-      const auto bins = f.size();
+      // // Size of Fourier response
+      // const auto bins = f.size();
 
-      std::cout << sample_rate * peak_bin / bins << " slow\n";
+      // std::cout << sample_rate * peak_bin / bins << " slow\n";
     }
   };
 
