@@ -46,10 +46,14 @@ ac44 get_meta(std::istream &in) {
 
   std::mutex m;
 
+  std::atomic<bool> shutdown;
+
 void dft() {
 
+  while (!shutdown.load()) {
   m.lock();
   std::cout << "released\n";
+  }
 }
 
 int main() {
@@ -61,7 +65,7 @@ int main() {
   const auto &sample_rate = get_meta(in).sample_rate;
 
   // Create a large block of samples
-  const size_t duration{4};
+  const size_t duration{1};
   std::vector<int16_t> samples(sample_rate * duration);
 
   // Split into blocks
@@ -74,6 +78,7 @@ int main() {
 
   std::atomic<std::int16_t> latest;
 
+  shutdown.store(false);
   m.lock();
   std::thread t1(dft);
 
@@ -84,11 +89,17 @@ int main() {
     latest.store(i);
     std::cout << latest.load() << "\n";
 
-    if (i == 10)
+    if (i %3)
       m.unlock();
   }
 
+  std::cout << "prepare to shutdown\n";
+  shutdown.store(true);
+
+  std::cout << "join thread\n";
   t1.join();
+
+  std::cout << "c'est fini\n";
   
     // Create placeholder for future
   //   std::future<std::vector<double>> fourier;
