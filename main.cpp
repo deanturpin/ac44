@@ -61,15 +61,14 @@ int main() {
   const size_t block_size{sample_rate / blocks_per_second};
 
   std::atomic<std::int16_t> latest;
-  std::mutex m;
+  std::mutex quick, slow;
   std::atomic<bool> shutdown;
 
-  // DFT analysis thread
-  const auto dft = [&]() {
+  const auto quick_loop = [&]() {
     while (!shutdown.load()) {
 
       // Wait until some samples are available
-      m.lock();
+      quick.lock();
 
       // Prepare to copy the latest block
       const auto i = latest.load();
@@ -87,26 +86,59 @@ int main() {
       // Size of Fourier response
       const auto bins = f.size();
 
-      std::cout << sample_rate * peak_bin / bins << "\n";
+      std::cout << sample_rate * peak_bin / bins << " quick\n";
+    }
+  };
+
+  const auto slow_loop = [&]() {
+    while (!shutdown.load()) {
+
+      // Wait until some samples are available
+      slow.lock();
+
+      // Prepare to copy the latest block
+      const auto i = latest.load();
+      const size_t start = i * block_size;
+      const size_t end = (i + 1) * block_size;
+      const std::vector<int16_t> s(&samples[start], &samples[end]);
+
+      // Do Fourier analysis
+      const auto f = get_fourier(s);
+
+      // Calculate frequency of max bin
+      const auto peak_bin =
+          std::distance(f.cbegin(), std::max_element(f.cbegin(), f.cend()));
+
+      // Size of Fourier response
+      const auto bins = f.size();
+
+      std::cout << sample_rate * peak_bin / bins << " slow\n";
     }
   };
 
   // Get ready to release thread
   shutdown.store(false);
-  m.lock();
-  std::thread t1(dft);
+  quick.lock();
+  slow.lock();
+  std::thread t1(quick_loop);
+  std::thread t2(slow_loop);
 
   for (size_t i = 0; i < samples.size() / block_size; ++i) {
+
+    // Read a block of samples
     std::cin.read(reinterpret_cast<char *>(&samples[i * block_size]),
                   block_size * sizeof(int16_t));
 
+    // Store current index and release the processing
     latest.store(i);
+    quick.unlock();
 
-    if (!(i % 3))
-      m.unlock();
+    if (!((i + 1) % blocks_per_second))
+      slow.unlock();
   }
 
-  // Wait for thread to return
+  // Wait for threads to return
   shutdown.store(true);
   t1.join();
+  t2.join();
 }

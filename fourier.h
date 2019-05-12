@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <vector>
 
-template <class T> constexpr T bins = 2 * 1024;
+template <class T> constexpr T bins = 4 * 1024;
 std::vector<double> get_fourier(const std::vector<int16_t> &);
 
 #endif
