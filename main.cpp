@@ -44,17 +44,6 @@ ac44 get_meta(std::istream &in) {
   return meta;
 }
 
-  std::mutex m;
-
-  std::atomic<bool> shutdown;
-
-void dft() {
-
-  while (!shutdown.load()) {
-  m.lock();
-  std::cout << "released\n";
-  }
-}
 
 int main() {
 
@@ -72,11 +61,22 @@ int main() {
   const size_t blocks_per_second{10};
   const size_t block_size{sample_rate / blocks_per_second};
 
-  std::cout << blocks_per_second << " blocks per seconds\n";
-  std::cout << block_size << " block size\n";
-  std::cout << duration << " seconds\n";
+  // std::cout << blocks_per_second << " blocks per seconds\n";
+  // std::cout << block_size << " block size\n";
+  // std::cout << duration << " seconds\n";
 
   std::atomic<std::int16_t> latest;
+
+  std::mutex m;
+  std::atomic<bool> shutdown;
+
+  const auto dft = [&]() {
+
+    while (!shutdown.load()) {
+    m.lock();
+    std::cout << latest.load() << " released\n";
+    }
+  };
 
   shutdown.store(false);
   m.lock();
@@ -87,9 +87,8 @@ int main() {
     sizeof(int16_t));
 
     latest.store(i);
-    std::cout << latest.load() << "\n";
 
-    if (i %3)
+    if (!(i %3))
       m.unlock();
   }
 
