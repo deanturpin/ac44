@@ -57,7 +57,7 @@ int main() {
   std::vector<int16_t> samples(sample_rate * duration);
 
   // Split into blocks
-  const size_t blocks_per_second{10};
+  const size_t blocks_per_second{5};
   const size_t block_size{sample_rate / blocks_per_second};
 
   std::atomic<std::int16_t> latest;
@@ -80,15 +80,23 @@ int main() {
       const auto f = get_fourier(s);
 
       // Calculate frequency of max bin
-      const auto peak_bin =
-          std::distance(f.cbegin(), std::max_element(f.cbegin(), f.cend()));
+      const auto peak_bin_it = std::max_element(f.cbegin(), f.cend());
+      // const size_t peak_bin = std::distance(f.cbegin(), peak_bin_it);
 
       // Size of Fourier response
       const auto bins = f.size();
 
-      const double freq = 1.0 * sample_rate * peak_bin / bins;
-      if (freq > 0)
-        std::cout << freq << "\n";
+      // Check either side of peak
+      for (auto p = std::max(std::prev(peak_bin_it), f.cbegin());
+                             p < std::min(std::next(peak_bin_it, 2), f.cend()); ++p) {
+
+        const size_t bin = std::distance(f.cbegin(), p);
+        const double freq = 1.0 * sample_rate * bin / bins;
+        if (freq > 0)
+          std::cout << freq << "\t" << f.at(bin) << "\t";
+        }
+
+        std::cout << "\n";
     }
   };
 
