@@ -53,7 +53,7 @@ int main() {
   const auto &sample_rate = get_meta(in).sample_rate;
 
   // Create a large block of samples
-  const size_t duration{10};
+  const size_t duration{30};
   std::vector<int16_t> samples(sample_rate * duration);
 
   // Split into blocks
@@ -76,6 +76,8 @@ int main() {
       const size_t end = (i + 1) * block_size;
       const std::vector<int16_t> s(&samples[start], &samples[end]);
 
+      // quick.unlock();
+
       // Do Fourier analysis
       const auto f = get_fourier(s);
 
@@ -88,8 +90,8 @@ int main() {
 
         const double freq = 1.0 * sample_rate * bin / bins;
 
-        if (freq > 0)
-          std::cout << freq << " " << bin << "\n";
+        // if (freq > 0)
+          std::cout << bin << "\t" << freq << "\n";
 
     }
   };
@@ -122,8 +124,9 @@ int main() {
 
   // Get ready to release thread
   shutdown.store(false);
-  quick.lock();
   slow.lock();
+    quick.lock();
+
   std::thread t1(quick_loop);
   std::thread t2(slow_loop);
 
