@@ -81,22 +81,16 @@ int main() {
 
       // Calculate frequency of max bin
       const auto peak_bin_it = std::max_element(f.cbegin(), f.cend());
-      // const size_t peak_bin = std::distance(f.cbegin(), peak_bin_it);
+      const size_t bin = std::distance(f.cbegin(), peak_bin_it);
 
       // Size of Fourier response
       const auto bins = f.size();
 
-      // Check either side of peak
-      for (auto p = std::max(std::prev(peak_bin_it), f.cbegin());
-                             p < std::min(std::next(peak_bin_it, 2), f.cend()); ++p) {
-
-        const size_t bin = std::distance(f.cbegin(), p);
         const double freq = 1.0 * sample_rate * bin / bins;
-        if (freq > 0)
-          std::cout << freq << "\t" << f.at(bin) << "\t";
-        }
 
-        std::cout << "\n";
+        if (freq > 0)
+          std::cout << freq << " " << bin << "\n";
+
     }
   };
 
