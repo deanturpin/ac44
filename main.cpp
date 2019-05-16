@@ -52,100 +52,18 @@ int main() {
   // Get the meta data
   const auto &sample_rate = get_meta(in).sample_rate;
 
-  // Create a large block of samples
-  const size_t duration{30};
-  std::vector<int16_t> samples(sample_rate * duration);
-
-  // Split into blocks
-  const size_t blocks_per_second{5};
-  const size_t block_size{sample_rate / blocks_per_second};
-
-  std::atomic<std::int16_t> latest;
-  std::mutex quick, slow;
-  std::atomic<bool> shutdown;
-
-  const auto quick_loop = [&]() {
-    while (!shutdown.load()) {
-
-      // Wait until some samples are available
-      quick.lock();
-
-      // Prepare to copy the latest block
-      const auto i = latest.load();
-      const size_t start = i * block_size;
-      const size_t end = (i + 1) * block_size;
-      const std::vector<int16_t> s(&samples[start], &samples[end]);
-
-      // quick.unlock();
-
-      // Do Fourier analysis
-      const auto f = get_fourier(s);
-
-      // Calculate frequency of max bin
-      const auto peak_bin_it = std::max_element(f.cbegin(), f.cend());
-      const size_t bin = std::distance(f.cbegin(), peak_bin_it);
-
-      // Size of Fourier response
-      const auto bins = f.size();
-
-        const double freq = 1.0 * sample_rate * bin / bins;
-
-        // if (freq > 0)
-          std::cout << bin << "\t" << freq << "\n";
-
-    }
-  };
-
-  const auto slow_loop = [&]() {
-    while (!shutdown.load()) {
-
-      // Wait until some samples are available
-      slow.lock();
-
-      // Prepare to copy the latest block
-      const auto i = latest.load();
-      const size_t start = i * block_size;
-      const size_t end = (i + 1) * block_size;
-      const std::vector<int16_t> s(&samples[start], &samples[end]);
-
-      // Do Fourier analysis
-      const auto f = get_fourier(s);
-
-      // Calculate frequency of max bin
-      // const auto peak_bin =
-      //     std::distance(f.cbegin(), std::max_element(f.cbegin(), f.cend()));
-
-      // // Size of Fourier response
-      // const auto bins = f.size();
-
-      // std::cout << sample_rate * peak_bin / bins << " slow\n";
-    }
-  };
-
-  // Get ready to release thread
-  shutdown.store(false);
-  slow.lock();
-    quick.lock();
-
-  std::thread t1(quick_loop);
-  std::thread t2(slow_loop);
-
-  for (size_t i = 0; i < samples.size() / block_size; ++i) {
+  std::vector<int16_t> samples(sample_rate);
 
     // Read a block of samples
-    std::cin.read(reinterpret_cast<char *>(&samples[i * block_size]),
-                  block_size * sizeof(int16_t));
+    while(std::cin.read(reinterpret_cast<char *>(samples.data()),
+                  samples.size() * sizeof(int16_t))) {
 
-    // Store current index and release the processing
-    latest.store(i);
-    quick.unlock();
+      for (const auto &s : samples) {
 
-    if (!((i + 1) % blocks_per_second))
-      slow.unlock();
+        static size_t i{0};
+
+        std::cout << i << ",\t" << s << ",\n";
+        ++i;
+      }
   }
-
-  // Wait for threads to return
-  shutdown.store(true);
-  t1.join();
-  t2.join();
 }
